@@ -26,8 +26,7 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
     try {
       const q = query(
         collection(db, 'ai_consultations'),
-        where('userId', '==', userProfile.uid),
-        orderBy('timestamp', 'desc')
+        where('userId', '==', userProfile.uid)
       );
       const snap = await getDocs(q);
       const records: any[] = [];
