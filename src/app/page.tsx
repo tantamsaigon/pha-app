@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { fetchCurrentWeather, WeatherData } from '@/lib/weather';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { CloudSun, Bell, LogOut, Loader2, UserEdit, LayoutDashboard, History, BarChart3 } from 'lucide-react';
+import { CloudSun, Bell, LogOut, Loader2, UserPen, LayoutDashboard, History, BarChart3 } from 'lucide-react';
 import { registerPushNotification } from '@/lib/pushHelper';
 
 export default function Home() {
@@ -86,7 +86,7 @@ export default function Home() {
                 onClick={() => setIsProfileModalOpen(true)}
                 className="text-xs text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1"
               >
-                <UserEdit className="w-3.5 h-3.5" /> Sửa
+                <UserPen className="w-3.5 h-3.5" /> Sửa
               </button>
             </div>
           </div>
