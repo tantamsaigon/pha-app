@@ -26,15 +26,25 @@ export default function Home() {
   const loadHealthLogs = async () => {
     if (!user) return;
     try {
+      // Chỉ lọc theo userId -> Firebase không bắt tạo Index nữa
       const q = query(
         collection(db, 'health_logs'),
         where('userId', '==', user.uid)
       );
+
       const querySnapshot = await getDocs(q);
       const logs: any[] = [];
       querySnapshot.forEach((doc) => {
         logs.push({ id: doc.id, ...doc.data() });
       });
+
+      // Tự sắp xếp mới nhất lên đầu bằng JS
+      logs.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
+
       setHealthLogs(logs);
     } catch (error) {
       console.error('Lỗi khi tải nhật ký:', error);
@@ -71,7 +81,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
       <div className="max-w-2xl mx-auto space-y-6">
-        
+
         {/* Header App & Cụm Công Cụ */}
         <header className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
