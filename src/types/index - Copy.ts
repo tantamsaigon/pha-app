@@ -1,13 +1,13 @@
 export interface UserProfile {
   uid: string;
-  username?: string;
+  username: string;
   fullName: string;
   birthYear: number;
   weight: number; // kg
   height: number; // cm
   bloodType: string;
-  location?: string;
-  createdAt?: any;
+  location: string;
+  createdAt: Date;
 }
 
 export type LogType = 'FOOD' | 'ACTIVITY' | 'SYMPTOM';
@@ -44,21 +44,5 @@ export interface HealthLog {
   date: string; // YYYY-MM-DD
   type: LogType;
   data: FoodData | ActivityData | SymptomData;
-  createdAt?: any;
-}
-
-export interface AIConsultationAdvice {
-  causeAnalysis: string;
-  medicalRecommendation: string;
-  nextMealMenu: string[];
-  suggestedActivities: string;
-}
-
-export interface AIConsultationRecord {
-  id?: string;
-  userId: string;
-  timestamp: any;
-  mode: 'MANUAL' | 'SCHEDULED' | 'DOCTOR_EXPORT';
-  symptomReferenceId?: string | null;
-  adviceContent: AIConsultationAdvice;
+  createdAt?: Date;
 }
