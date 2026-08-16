@@ -121,24 +121,36 @@
 
 
 
-## 3. Cấu Trúc Thư Mục & Các File Đã Triển Khai (Project Directory Structure) (Done)
+## 3. Cấu Trúc Thư Mục & Các File Đã Triển Khai (Project Directory Structure)
 
 pha-app/
-├── .env.local                       # Biến môi trường (Firebase Config & OpenRouter API Key)
-├── package.json                     # Dependencies (Firebase, Lucide-React, Next-PWA, ...)
+├── .env.local                       # Biến môi trường (Firebase, OpenRouter, VAPID Keys, CRON_SECRET)
+├── package.json                     # Dependencies (Firebase, web-push, Lucide-React, Next.js, ...)
 ├── tsconfig.json                    # Cấu hình TypeScript & Path Aliases (@/*)
+├── vercel.json                      # [Phase 4] Cấu hình Vercel Cron Jobs theo mốc UTC cho 6 khung giờ
+├
+├── public/                          # Static assets & Service Worker
+│   ├── sw.js                        # [Phase 4] Service Worker xử lý sự kiện Push & Click Notification
+│   ├── icon-192x192.png
+│   └── badge-72x72.png
 ├
 └── src/
     ├── app/
     │   ├── api/
     │   │   ├── consult/
     │   │   │   └── route.ts         # [Phase 2] Route Handler gọi OpenRouter (DeepSeek-V3) cho tư vấn AI
-    │   │   └── doctor-export/
-    │   │       └── route.ts         # [Phase 3] Route Handler tổng hợp báo cáo y khoa dành cho bác sĩ
+    │   │   ├── doctor-export/
+    │   │   │   └── route.ts         # [Phase 3] Route Handler tổng hợp báo cáo y khoa dành cho bác sĩ
+    │   │   ├── push/
+    │   │   │   └── subscribe/
+    │   │   │       └── route.ts     # [Phase 4] Route Handler lưu Web Push Subscription từ Client
+    │   │   └── cron/
+    │   │       └── scheduled-advice/
+    │   │           └── route.ts     # [Phase 4] Route Handler chạy Cron Job gửi thông báo đẩy tự động theo giờ
     │   ├── favicon.ico
     │   ├── globals.css
     │   ├── layout.tsx               # Root Layout
-    │   └── page.tsx                 # Trang chủ tích hợp Form, Consultation & Doctor Export
+    │   └── page.tsx                 # Trang chủ tích hợp Form, Consultation, Doctor Export & PWA Push Button
     ├── components/
     │   ├── HealthLogForm.tsx        # [Phase 1] Form nhập liệu linh hoạt (Food, Activity, Symptom + Voice Input)
     │   ├── AIConsultation.tsx       # [Phase 2] Component tư vấn AI & đọc âm thanh (Text-to-Speech)
@@ -146,6 +158,8 @@ pha-app/
     ├── lib/
     │   ├── firebase.ts              # [Phase 1] Khởi tạo Firebase App, Auth & Firestore
     │   ├── mockData.ts              # [Phase 1] Script khởi tạo dữ liệu mẫu 7 ngày
-    │   └── weather.ts               # [Phase 3] Service kết nối Open-Meteo API lấy thông tin thời tiết
+    │   ├── weather.ts               # [Phase 3] Service kết nối Open-Meteo API lấy thông tin thời tiết
+    │   ├── pushHelper.ts            # [Phase 4] Helper đăng ký Service Worker & kích hoạt Web Push trên Browser
+    │   └── subscriptions.ts         # [Phase 4] Bộ lưu trữ danh sách Web Push Subscriptions (tránh lỗi build)
     └── types/
         └── index.ts                 # [Phase 1] Định nghĩa TypeScript Interfaces (UserProfile, HealthLog, Vitals...)

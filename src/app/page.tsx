@@ -4,35 +4,27 @@ import React, { useState, useEffect } from 'react';
 import HealthLogForm from '@/components/HealthLogForm';
 import AIConsultation from '@/components/AIConsultation';
 import DoctorExportModal from '@/components/DoctorExportModal';
-import { seedMockData } from '@/lib/mockData';
+import AuthModal from '@/components/AuthModal';
+import { useAuth } from '@/context/AuthContext';
 import { fetchCurrentWeather, WeatherData } from '@/lib/weather';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Database, CloudSun, RefreshCw, Bell } from 'lucide-react';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { CloudSun, Bell, LogOut, Loader2 } from 'lucide-react';
 import { registerPushNotification } from '@/lib/pushHelper';
 
 export default function Home() {
-  const testUserId = 'user_demo_123';
-
-  const [userProfile] = useState({
-    uid: testUserId,
-    fullName: 'Nguyễn Văn A',
-    birthYear: 1990,
-    weight: 68,
-    height: 172,
-    bloodType: 'O',
-  });
+  const { user, userProfile, loading: authLoading, logout } = useAuth();
 
   const [healthLogs, setHealthLogs] = useState<any[]>([]);
   const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [seeding, setSeeding] = useState(false);
 
-  // Tải dữ liệu nhật ký từ Firestore
+  // Tải dữ liệu nhật ký từ Firestore của User hiện tại
   const loadHealthLogs = async () => {
+    if (!user) return;
     try {
       const q = query(
         collection(db, 'health_logs'),
-        where('userId', '==', testUserId)
+        where('userId', '==', user.uid)
       );
       const querySnapshot = await getDocs(q);
       const logs: any[] = [];
@@ -46,7 +38,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    loadHealthLogs();
+    if (user) {
+      loadHealthLogs();
+    }
 
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -62,21 +56,19 @@ export default function Home() {
         }
       );
     }
-  }, []);
+  }, [user]);
 
-  const handleSeedData = async () => {
-    setSeeding(true);
-    try {
-      await seedMockData(testUserId);
-      await loadHealthLogs();
-      alert('Đã tạo thành công dữ liệu mẫu 7 ngày!');
-    } catch (err) {
-      console.error(err);
-      alert('Có lỗi khi tạo dữ liệu mẫu.');
-    } finally {
-      setSeeding(false);
-    }
-  };
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user || !userProfile) {
+    return <AuthModal />;
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
@@ -89,22 +81,32 @@ export default function Home() {
               PHA - Sổ Tay Sức Khỏe AI
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Bệnh nhân: <span className="font-semibold">{userProfile.fullName}</span> ({userProfile.weight}kg - {userProfile.height}cm)
+              Bệnh nhân: <span className="font-semibold text-slate-800">{userProfile.fullName}</span> ({userProfile.weight}kg - {userProfile.height}cm - Nhóm máu {userProfile.bloodType})
             </p>
           </div>
 
-          {weather && (
-            <div className="flex items-center gap-2 bg-indigo-50/60 border border-indigo-100 px-3 py-2 rounded-xl text-xs text-indigo-900">
-              <CloudSun className="w-5 h-5 text-indigo-600" />
-              <div>
-                <p className="font-bold">{weather.temperature}°C</p>
-                <p className="text-[10px] text-indigo-700">{weather.condition}</p>
+          <div className="flex items-center gap-2">
+            {weather && (
+              <div className="flex items-center gap-2 bg-indigo-50/60 border border-indigo-100 px-3 py-2 rounded-xl text-xs text-indigo-900">
+                <CloudSun className="w-5 h-5 text-indigo-600" />
+                <div>
+                  <p className="font-bold">{weather.temperature}°C</p>
+                  <p className="text-[10px] text-indigo-700">{weather.condition}</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+
+            <button
+              onClick={logout}
+              title="Đăng xuất"
+              className="p-2 text-slate-400 hover:text-red-600 transition rounded-lg border border-slate-100 hover:bg-slate-50"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </header>
 
-        {/* Nút Bật Nhắc Nhở Tự Động PWA (Tách riêng thành khối độc lập) */}
+        {/* Nút Bật Nhắc Nhở Tự Động PWA */}
         <button
           type="button"
           onClick={registerPushNotification}
@@ -114,31 +116,13 @@ export default function Home() {
           <span>Bật Nhắc Nhở Tự Động Theo Khung Giờ (PWA)</span>
         </button>
 
-        {/* Khối Tạo Mock Data */}
-        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between gap-3">
-          <div className="text-xs text-amber-800 space-y-1">
-            <p className="font-bold flex items-center gap-1">
-              <Database className="w-4 h-4" /> Dữ Liệu Thử Nghiệm (Local Test)
-            </p>
-            <p>Nạp dữ liệu ăn uống, hoạt động & triệu chứng 7 ngày gần nhất để AI phân tích.</p>
-          </div>
-          <button
-            onClick={handleSeedData}
-            disabled={seeding}
-            className="text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1 whitespace-nowrap"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${seeding ? 'animate-spin' : ''}`} />
-            {seeding ? 'Đang tạo...' : 'Nạp Mock Data'}
-          </button>
-        </div>
+        {/* Form Nhập Liệu Thật */}
+        <HealthLogForm userId={userProfile.uid} onSaveSuccess={loadHealthLogs} />
 
-        {/* Phase 1: Form Nhập Liệu */}
-        <HealthLogForm userId={testUserId} onSaveSuccess={loadHealthLogs} />
-
-        {/* Phase 2: Tư Vấn AI */}
+        {/* Tư Vấn AI */}
         <AIConsultation userProfile={userProfile} healthLogs={healthLogs} />
 
-        {/* Phase 3: Báo Cáo Bác Sĩ */}
+        {/* Báo Cáo Bác Sĩ */}
         <DoctorExportModal userProfile={userProfile} healthLogs={healthLogs} />
 
       </div>
