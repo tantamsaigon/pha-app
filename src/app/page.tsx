@@ -8,7 +8,8 @@ import { seedMockData } from '@/lib/mockData';
 import { fetchCurrentWeather, WeatherData } from '@/lib/weather';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { Database, CloudSun, RefreshCw } from 'lucide-react';
+import { Database, CloudSun, RefreshCw, Bell } from 'lucide-react';
+import { registerPushNotification } from '@/lib/pushHelper';
 
 export default function Home() {
   const testUserId = 'user_demo_123';
@@ -103,8 +104,18 @@ export default function Home() {
           )}
         </header>
 
-        {/* Nút Tạo Mock Data */}
-        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between">
+        {/* Nút Bật Nhắc Nhở Tự Động PWA (Tách riêng thành khối độc lập) */}
+        <button
+          type="button"
+          onClick={registerPushNotification}
+          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+        >
+          <Bell className="w-5 h-5" />
+          <span>Bật Nhắc Nhở Tự Động Theo Khung Giờ (PWA)</span>
+        </button>
+
+        {/* Khối Tạo Mock Data */}
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-center justify-between gap-3">
           <div className="text-xs text-amber-800 space-y-1">
             <p className="font-bold flex items-center gap-1">
               <Database className="w-4 h-4" /> Dữ Liệu Thử Nghiệm (Local Test)

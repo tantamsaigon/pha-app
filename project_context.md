@@ -115,31 +115,11 @@
 - Tích hợp Open-Meteo API lấy thời tiết theo vị trí.
 - Xây dựng Cron Job / Push Notification cho các mốc giờ tư vấn tự động trong ngày.
 
-### Phase 4: Production & Deployment
+### Phase 4: Production & Deployment (Done)
 - Deploy Frontend lên Vercel.
 - Tối ưu PWA cho trải nghiệm ứng dụng trên di động (iOS, Android, PC, Mac).
 
------------------------------CẬP NHẬT THÊM SAU KHI HOÀN THÀNH TỪ PHASE 1 ĐẾN PHASE 3--------------------------
-# PROJECT CONTEXT: AI Personal Health Assistant (Sổ Tay Sức Khỏe AI) (PHA)
 
-## 1. Tổng Quan Dự Án (Overview)
-Ứng dụng Web App đa nền tảng (iOS, Android, PC, Mac) đóng vai trò là Trợ lý AI Phân tích Sức khỏe Cá nhân.
-- **Mục tiêu**: Theo dõi nhật ký nạp thực phẩm/thuốc, hoạt động thể chất/trí não và triệu chứng cơ thể để AI phân tích nguyên nhân, đề xuất tư vấn y tế, thực phẩm và hoạt động phù hợp. Làm dữ liệu bằng chứng chuẩn y khoa hỗ trợ bác sĩ khi khám và điều trị bệnh.
-- **Phương thức nhập liệu**: Nhập văn bản hoặc giọng nói (Microphone).
-- **Phương thức phản hồi**: Văn bản hiển thị trên màn hình và đọc bằng giọng nói (Text-to-Speech / Web Speech API).
-
----
-
-## 2. Kiến Trúc Kỹ Thuật (Tech Stack & Infrastructure)
-- **Frontend**: Next.js (React), TailwindCSS, PWA support (Cài đặt trên iOS, Android, PC, Mac như native app).
-- **Backend & Auth**: Firebase Auth, Firebase Firestore Database, Firebase Cloud Messaging (Thông báo nhắc nhở).
-- **AI Engine**: **OpenRouter API** - Model **DeepSeek-V3** (`deepseek/deepseek-chat`) cho logic suy luận sinh học (thời gian tồn tại thực phẩm/thuốc/hoạt động trong cơ thể, phân tích nguyên nhân triệu chứng, tổng hợp hồ sơ y khoa cho bác sĩ).
-- **Speech-to-Text & Text-to-Speech**: Web Speech API (Native browser) / gTTS.
-- **External API**: Open-Meteo API (Lấy thông tin thời tiết miễn phí theo vị trí người dùng).
-- **Hosting / Deploy**: Vercel (Frontend + Serverless Functions) & GitHub Repositories.
-- **Local Dev Server**: Zorin OS (Local Node.js environment).
-
----
 
 ## 3. Cấu Trúc Thư Mục & Các File Đã Triển Khai (Project Directory Structure) (Done)
 
