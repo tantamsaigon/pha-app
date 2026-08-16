@@ -4,9 +4,11 @@ https://pha-app.vercel.app/
 
 # 1. Gom tất cả các file đã sửa
 git add .
+git commit -m "fix: safe webpush init for build"
+git push origin main
 
 # 2. Ghi chú nội dung vừa sửa lỗi
-git commit -m "Fix bug: cap nhat loi AI consultation"
+git commit -m "xoa bo mock data, thêm nguoi dung that"
 
 # 3. Đẩy code lên GitHub
 git push origin main

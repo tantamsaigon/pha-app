@@ -217,7 +217,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           <div className="grid grid-cols-12 gap-2">
             <input
               type="text"
-              placeholder="Đau đầu, Chóng mặt..."
+              placeholder="Đau đầu, Bình thường..."
               value={symptomDesc}
               onChange={(e) => setSymptomDesc(e.target.value)}
               className="col-span-9 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"

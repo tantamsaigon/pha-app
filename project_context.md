@@ -121,7 +121,7 @@
 
 
 
-## 3. Cấu Trúc Thư Mục & Các File Đã Triển Khai (Project Directory Structure)
+## 7. Cấu Trúc Thư Mục & Các File Đã Triển Khai (Project Directory Structure)
 
 pha-app/
 ├── .env.local                       # Biến môi trường (Firebase, OpenRouter, VAPID Keys, CRON_SECRET)
@@ -146,20 +146,42 @@ pha-app/
     │   │   │       └── route.ts     # [Phase 4] Route Handler lưu Web Push Subscription từ Client
     │   │   └── cron/
     │   │       └── scheduled-advice/
-    │   │           └── route.ts     # [Phase 4] Route Handler chạy Cron Job gửi thông báo đẩy tự động theo giờ
+    │   │           └── route.ts     # [Phase 4] Cron Job gửi thông báo đẩy tự động (Khởi tạo WebPush an toàn khi build)
     │   ├── favicon.ico
     │   ├── globals.css
-    │   ├── layout.tsx               # Root Layout
-    │   └── page.tsx                 # Trang chủ tích hợp Form, Consultation, Doctor Export & PWA Push Button
+    │   ├── layout.tsx               # Root Layout (Tích hợp AuthProvider toàn cục)
+    │   └── page.tsx                 # Trang chủ quản lý trạng thái Đăng nhập, Form, Consultation & PWA
     ├── components/
-    │   ├── HealthLogForm.tsx        # [Phase 1] Form nhập liệu linh hoạt (Food, Activity, Symptom + Voice Input)
-    │   ├── AIConsultation.tsx       # [Phase 2] Component tư vấn AI & đọc âm thanh (Text-to-Speech)
+    │   ├── AuthModal.tsx            # [Production] Form Đăng ký (nhập chỉ số thể trạng) & Đăng nhập (Firebase Auth)
+    │   ├── HealthLogForm.tsx        # [Phase 1] Form nhập liệu linh hoạt (Food, Activity, Symptom + iOS Dictation UI)
+    │   ├── AIConsultation.tsx       # [Phase 2] Component tư vấn AI & đọc âm thanh (gTTS / Web Speech API)
     │   └── DoctorExportModal.tsx    # [Phase 3] Modal chọn mốc thời gian, tạo báo cáo & In/Lưu PDF cho Bác sĩ
+    ├── context/
+    │   └── AuthContext.tsx          # [Production] Context quản lý phiên đăng nhập & Lắng nghe Realtime Profile
     ├── lib/
-    │   ├── firebase.ts              # [Phase 1] Khởi tạo Firebase App, Auth & Firestore
-    │   ├── mockData.ts              # [Phase 1] Script khởi tạo dữ liệu mẫu 7 ngày
+    │   ├── firebase.ts              # [Phase 1] Khởi tạo Firebase App, Firestore DB & Firebase Auth
     │   ├── weather.ts               # [Phase 3] Service kết nối Open-Meteo API lấy thông tin thời tiết
     │   ├── pushHelper.ts            # [Phase 4] Helper đăng ký Service Worker & kích hoạt Web Push trên Browser
-    │   └── subscriptions.ts         # [Phase 4] Bộ lưu trữ danh sách Web Push Subscriptions (tránh lỗi build)
+    │   └── subscriptions.ts         # [Phase 4] Bộ lưu trữ danh sách Web Push Subscriptions
     └── types/
         └── index.ts                 # [Phase 1] Định nghĩa TypeScript Interfaces (UserProfile, HealthLog, Vitals...)
+
+# B. CÁC VẤN ĐỀ CẦN NÂNG CẤP
+Để nâng tầm ứng dụng từ một phiên bản chạy ổn định (MVP) lên một sản phẩm hoàn thiện, trải nghiệm cao cấp cho người dùng thực tế, mình gợi ý một số ý tưởng cải tiến theo từng nhóm trọng tâm:
+1. Nâng Cấp Quản Lý Tài Khoản & Dữ Liệu Cá NhânTrang Chỉnh Sửa Profile: 
+- Thêm màn hình cho phép người dùng cập nhật lại cân nặng, chiều cao, chỉ số huyết áp định kỳ. Khi cân nặng/chiều cao thay đổi, AI sẽ tính toán lại chỉ số BMI và đưa ra lời khuyên chính xác hơn.
+
+- Lịch Sử & Nhật Ký Trực Quan:Hiện tại ứng dụng mới cho nhập nhật ký. Bạn có thể thêm một tab "Lịch sử nhật ký" hiển thị danh sách các món đã ăn, hoạt động đã làm theo ngày.
+-Cho phép người dùng Xóa hoặc Sửa bản ghi nếu nhập sai.
+
+2. Tối Ưu Trải Nghiệm AI & Báo CáoPhân Tích Xu Hướng Sức Khỏe (Analytics):
+-Vẽ biểu đồ theo dõi biến động cân nặng, tần suất xuất hiện các triệu chứng (ví dụ: đau đầu bao nhiêu lần trong tháng) để người dùng có cái nhìn trực quan trước khi xuất file cho Bác sĩ.
+
+-Lưu Lịch Sử Tư Vấn AI:Lưu các kết quả trả về từ ai_consultations vào Firestore để người dùng có thể xem lại những lời khuyên/thực đơn cũ mà AI đã gợi ý mà không cần bấm tư vấn lại.  
+
+3. Tăng Tương Tác & Trải Nghiệm PWA trên Di ĐộngNhắc Nhở Thông Minh Có Tính Tương Tác:
+- Khi Cron Job gửi thông báo PWA (ví dụ: "Đã đến giờ uống nước" hoặc "Gợi ý thực đơn tối"), bổ sung đường dẫn (deep link) khi người dùng chạm vào thông báo sẽ mở ngay đúng tab nhập liệu hoặc tab thực đơn.
+
+- Chế Độ Offline Support (PWA Offline):Tận dụng Service Worker (sw.js) để khi mất mạng (offline), người dùng vẫn mở được app và lưu tạm nhật ký vào LocalStorage/IndexedDB, sau đó tự động đồng bộ (sync) lên Firestore khi có mạng trở lại.  
+
+4. Bảo Mật & Tối Ưu Chi Phí BackendFirestore Security Rules:Đảm bảo đã siết chặt quy tắc bảo mật trên Firebase Console sao cho người dùng chỉ có thể read/write trên các document có userId == request.auth.uid.Rate Limit Cho AI API:Giới hạn số lần bấm nút "Tư Vấn Sức Khỏe AI" hoặc "Xuất Dữ Liệu Cho Bác Sĩ" (ví dụ: tối đa 5-10 lần/ngày/user) để tránh việc người dùng spam gây tăng chi phí OpenRouter API.        

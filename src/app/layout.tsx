@@ -3,7 +3,7 @@ import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
-  title: 'PHA - Sổ Tay Sức Khỏe AI',
+  title: 'Sổ Tay Sức Khỏe',
   description: 'Trợ lý AI Phân tích Sức khỏe Cá nhân',
 };
 

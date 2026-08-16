@@ -78,10 +78,10 @@ export default function Home() {
         <header className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-extrabold text-indigo-900">
-              PHA - Sổ Tay Sức Khỏe AI
+              Sổ Tay Sức Khỏe
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Bệnh nhân: <span className="font-semibold text-slate-800">{userProfile.fullName}</span> ({userProfile.weight}kg - {userProfile.height}cm - Nhóm máu {userProfile.bloodType})
+              Người dùng: <span className="font-semibold text-slate-800">{userProfile.fullName}</span> ({userProfile.weight}kg - {userProfile.height}cm - Nhóm máu {userProfile.bloodType})
             </p>
           </div>
 
@@ -113,7 +113,7 @@ export default function Home() {
           className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
         >
           <Bell className="w-5 h-5" />
-          <span>Bật Nhắc Nhở Tự Động Theo Khung Giờ (PWA)</span>
+          <span>Bật Nhắc Nhở Tự Động</span>
         </button>
 
         {/* Form Nhập Liệu Thật */}
