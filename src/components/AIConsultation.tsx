@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Volume2, VolumeX, Sparkles, Loader2 } from 'lucide-react';
+import { Volume2, Square, Sparkles, Loader2 } from 'lucide-react';
+import { playGTTSQueue, stopTTS } from '@/lib/ttsHelper';
 
 interface Advice {
   causeAnalysis: string;
@@ -37,37 +38,33 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
     }
   };
 
-  // Text-to-Speech bằng Web Speech API
-  const handleSpeak = () => {
-    if (!('speechSynthesis' in window)) {
-      alert('Trình duyệt của bạn không hỗ trợ đọc âm thanh (Text-to-Speech).');
-      return;
-    }
-
+  // Hàm xử lý đọc gTTS tiếng Việt
+  const handleToggleSpeakAI = () => {
     if (isSpeaking) {
-      window.speechSynthesis.cancel();
+      stopTTS();
       setIsSpeaking(false);
-      return;
+    } else {
+      if (!advice) return;
+
+      setIsSpeaking(true);
+
+      // Chuyển mảng thực đơn thành chuỗi đọc liền mạch
+      const menuText = advice.nextMealMenu ? advice.nextMealMenu.join(', ') : 'Không có';
+
+      // Ghép nội dung theo đúng cấu trúc của `advice`
+      const fullTextToRead = `
+        Kết quả phân tích AI. 
+        Phân tích nguyên nhân: ${advice.causeAnalysis || ''}. 
+        Lời khuyên y tế: ${advice.medicalRecommendation || ''}. 
+        Thực đơn bữa tiếp theo gồm: ${menuText}. 
+        Hoạt động gợi ý: ${advice.suggestedActivities || ''}.
+      `;
+
+      // Gọi gTTS đọc tiếng Việt
+      playGTTSQueue(fullTextToRead, () => {
+        setIsSpeaking(false);
+      });
     }
-
-    if (!advice) return;
-
-    const fullText = `
-      Phân tích nguyên nhân: ${advice.causeAnalysis}. 
-      Lời khuyên y tế: ${advice.medicalRecommendation}. 
-      Thực đơn bữa kế tiếp: ${advice.nextMealMenu.join(', ')}. 
-      Hoạt động gợi ý: ${advice.suggestedActivities}.
-    `;
-
-    const utterance = new SpeechSynthesisUtterance(fullText);
-    utterance.lang = 'vi-VN';
-    utterance.rate = 1.0;
-
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    setIsSpeaking(true);
-    window.speechSynthesis.speak(utterance);
   };
 
   return (
@@ -86,11 +83,20 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
           <div className="flex justify-between items-center border-b pb-2">
             <h3 className="text-lg font-bold text-indigo-900">Kết Quả Phân Tích AI</h3>
             <button
-              onClick={handleSpeak}
-              className={`p-2 rounded-full border ${isSpeaking ? 'bg-red-100 text-red-600 border-red-300' : 'bg-indigo-50 text-indigo-600 border-indigo-200'}`}
-              title={isSpeaking ? 'Dừng đọc' : 'Nghe đọc'}
+              type="button"
+              onClick={handleToggleSpeakAI}
+              className={`p-2 rounded-full transition-all ${
+                isSpeaking
+                  ? 'bg-amber-500 text-white animate-pulse'
+                  : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+              }`}
+              title={isSpeaking ? "Tạm dừng đọc" : "Đọc kết quả phân tích"}
             >
-              {isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              {isSpeaking ? (
+                <Square className="w-5 h-5 fill-current" />
+              ) : (
+                <Volume2 className="w-5 h-5" />
+              )}
             </button>
           </div>
 
@@ -107,7 +113,7 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
           <div>
             <h4 className="font-semibold text-orange-700">🥗 Thực Đơn Bữa Tiếp Theo:</h4>
             <ul className="list-disc list-inside text-sm text-gray-600 mt-1 space-y-1">
-              {advice.nextMealMenu.map((item, idx) => (
+              {advice.nextMealMenu?.map((item, idx) => (
                 <li key={idx}>{item}</li>
               ))}
             </ul>
