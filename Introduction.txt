@@ -1,0 +1,37 @@
+I. Mục đích:
+Giúp trợ lý AI phân tích sức khỏe của bạn để đưa ra đề xuất tốt nhất cho sức khỏe bản thân. Là bằng chứng tốt cho bác sĩ mỗi khi khám bệnh và điều trị.
+
+II. Cách hoạt động :
+1. Người dung nhập : 
+1.1 Trong ngày người dùng nhập vào mình đã ăn gì kèm lieu lượng vào lúc mấy giờ, ví dụ : ăn 1 ổ bánh mì với trứng ốp la lúc 8h:15 (ngày tháng năm hệ thống tự ghi của hệ thống, nếu không có phút thì lấy là 0 phút.),người dung có thể nhập nhiều lần trong ngày sau khi ăn, uống bất cứ 1 món gì nạp vào cơ thể, kể cả uống thuốc, tiêm thuốc vì đây là dinh dưỡng, để cho cơ thể sinh trưởng di trì,việc AI tính toán phải suy nghĩ là thức ăn , thức uống, thuốc... loại nào tồn tại bao lâu trong cơ thể để biết mà đề xuất, tư vấn.
+
+1.2 Hoạt động : Người dung phi nhập tất cả các hoạt động về cơ bắp, trí não, suy nghĩ, ngủ nghỉ...trong ngày của mình , ví dụ : đi làm vườn lúc 7:30 đến 10:00 (ngày tháng năm hệ thống tự ghi của hệ thống, nếu không có phút thì lấy là 0 phút.),AI suy nghĩ việc làm đó tác động đến có thể những gì và bao lâu, như ví dụ việc làm vườn sẽ làm cho cơ tay to hơn, và có thể gây đau nhứt xương trong ngày làm đầu tiên rồi sẽ hết sau vài ngày....
+
+1.3 Triệu chứng, biểu hiện :Người dùng nhập các triệu chứng , biểu hiện của cơ thể mình kể cả cân nặng, chiều cao, nhịp tim, huyết áp, các chỉ số bệnh mà xét nghiệm ghi nhận..., các biểu hiện đau nhứt, mệt mỏi,....để AI kết hợp các yếu tố thực phẩm đã ăn và các hoạt động đã làm bên trên mà đưa ra tư vấn nguyên nhân của các triệu chứng mà cơ thể đang gặp phải, ví dụ đau bụng tiêu chảy lúc 11:00, thì AI sẽ phân tích là lý do trước đó làm vườn lúc 7:30 mà không thấy hành động rửa tay rồi sau đó ăn bánh mì ốp la lúc 8:30 nên dẫn đến đau bụng tiêu chảy.... rồi từ đó AI sẽ đưa ra khuyến nghị y tế phù hợp tùy theo mức độ nghiêm trọng.
+2. AI trả lời :
+2.1 Nhấn nút Tư Vấn : khi nhấn nút này thì Ai sẽ đọc trường data của triệu chứng mới nhất để tư vấn các vấn đề ý tế liên quan đến triệu chứng mới nhất và đưa ra khuyến nghị y tế đồng thời đưa ra các thực phẩm cần ăn uống cho bữa ăn kế tiếp (uu tiên đề xuất các thực phẩm đã có trong database trước, nếu không có thì đề xuất các thực phẩm khác uu tiên loại dễ tìm, bình dân, rẻ tiền trước), và đưa ra các hoạt động phù hợp cho thời gian sau đó cho phù hợp.
+2.2 Tư vấn tự động : nội dung như trên khi nhấn nút Tư Vấn, tuy nhiên trong ngày nếu người dung quên bấm nút thì hệ thống tự động tư vấn định kỳ theo các thờ gian sau 
+ - lúc 7:45 nhắc nhở thêm về uống nước, uống thuốc nếu có và các hoạt động thì xem lịch sử trong database vào khung giờ này thì hay có các hoạt động gì thì đề xuất, lưu ý kết hợp thêm thời tiết, địa điểm của người dùng để có đề xuất phù hợp.
+
+- lúc 9:45 , lưu ý lúc này nhớ bổ sung thêm phần đưa ra menu các món ăn cho buổi trưa có thể AI đưa ra tùy theo triệu chứng ghi nhận nhưng bình thường menu cho bữa ăn gồm có món : Rau củ quả, món cá hoặc thịt, cơm trắng, canh. về hoạt động thì xem lịch sử trong database vào khung giờ này thì hay có các hoạt động gì thì đề xuất, lưu ý kết hợp them thời tiết, địa điểm của người dùng để có đề xuất phù hợp.
+
+ - lúc 11:45 nhắc nhở thêm về uống nước, uống thuốc nếu có và các hoạt động thì xem lịch sử trong database vào khung giờ này thì hay có các hoạt động gì thì đề xuất, lưu ý kết hợp thêm thời tiết, địa điểm của người dùng để có đề xuất phù hợp.
+
+ - lúc 14:45 nhắc nhở thêm về uống nước, uống thuốc nếu có và các hoạt động thì xem lịch sử trong database vào khung giờ này thì hay có các hoạt động gì thì đề xuất, lưu ý kết hợp thêm thời tiết, địa điểm của người dùng để có đề xuất phù hợp.
+
+- lúc 16:45 , lưu ý lúc này nhớ bổ sung thêm phần đưa ra menu các món ăn cho buổi tối có thể AI đưa ra tùy theo triệu chứng ghi nhận nhưng bình thường menu cho bữa ăn gồm có món : Rau củ quả, món cá hoặc thịt, cơm trắng, canh. về hoạt động thì xem lịch sử trong database vào khung giờ này thì hay có các hoạt động gì thì đề xuất, lưu ý kết hợp them thời tiết, địa điểm của người dùng để có đề xuất phù hợp.
+
+ - lúc 19:15 nhắc nhở thêm về uống thuốc nếu có và các hoạt động thì xem lịch sử trong database vào khung giờ này thì hay có các hoạt động gì thì đề xuất, lưu ý kết hợp thêm thời tiết, địa điểm của người dùng để có đề xuất phù hợp.
+
+PS: Lưu ý chung , AI phải phân tích, tính toán, phải suy nghĩ là thức ăn , thức uống, thuốc. loại hay hoạt động nào tồn tại bao lâu trong cơ thể để biết đề xuất.phải uu tiên đọc data trong ngày và phần data trước đó có thể là 1 tuần, 1 tháng, 1 năm, hoặc toàn bộ... để đưa ra đề xuất phù hợp.
+
+III. Phương tiện người dùng : người dùng sẽ dùng điện thoại : IOS, Android, PC, Mac . theo tôi mong muốn để đơn giản thì dùng Web app ( dùng gTTS)
+ người dùng sẽ nhập liệu vào bằng go text hoặc nói vào mic.
+ người dùng có thể đọc nôi dung tư vấn của AI hoặc có thể Nghe nói
+
+
+
+
+
+
+  
