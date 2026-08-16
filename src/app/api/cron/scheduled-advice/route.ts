@@ -3,11 +3,18 @@ import { NextResponse } from 'next/server';
 import webpush from 'web-push';
 import { subscriptions } from '@/lib/subscriptions';
 
-webpush.setVapidDetails(
-  process.env.VAPID_SUBJECT!,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-);
+// Cấu hình Helper khởi tạo WebPush an toàn (tránh lỗi build Vercel)
+function initWebPush() {
+  const subject = process.env.VAPID_SUBJECT || 'mailto:admin@example.com';
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
+  const privateKey = process.env.VAPID_PRIVATE_KEY || '';
+
+  if (publicKey && privateKey) {
+    webpush.setVapidDetails(subject, publicKey, privateKey);
+    return true;
+  }
+  return false;
+}
 
 const TIME_CONFIGS: Record<string, { title: string; promptType: string }> = {
   '0745': { title: '⏰ Sáng Mới: Nhắc Nhở Sức Khỏe', promptType: 'water_medication' },
@@ -22,7 +29,6 @@ export async function GET(req: Request) {
   // 1. Kiểm tra xác thực Bảo mật
   const authHeader = req.headers.get('authorization');
   
-  // Cho phép bỏ qua kiểm tra auth khi chạy ở môi trường local (development) để dễ test thủ công
   if (
     process.env.NODE_ENV === 'production' &&
     authHeader !== `Bearer ${process.env.CRON_SECRET}`
@@ -30,7 +36,15 @@ export async function GET(req: Request) {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  // 2. Lấy tham số khung giờ
+  // 2. Khởi tạo WebPush
+  if (!initWebPush()) {
+    return NextResponse.json(
+      { error: 'Chưa cấu hình biến môi trường VAPID Keys' },
+      { status: 500 }
+    );
+  }
+
+  // 3. Lấy tham số khung giờ
   const { searchParams } = new URL(req.url);
   const timeKey = searchParams.get('time') || '0745';
   const config = TIME_CONFIGS[timeKey];
@@ -39,7 +53,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Khung giờ không hợp lệ' }, { status: 400 });
   }
 
-  // 3. Chuẩn bị nội dung tư vấn theo khung giờ
+  // 4. Chuẩn bị nội dung tư vấn theo khung giờ
   const weatherText = 'Nắng nhẹ, 29°C'; 
   let adviceMessage = '';
 
@@ -59,7 +73,7 @@ export async function GET(req: Request) {
     url: '/',
   });
 
-  // 4. Gửi Push Notification tới các thiết bị đã đăng ký
+  // 5. Gửi Push Notification tới các thiết bị đã đăng ký
   const pushPromises = subscriptions.map((sub) =>
     webpush.sendNotification(sub, payload).catch((err) => console.error('Lỗi gửi Push:', err))
   );

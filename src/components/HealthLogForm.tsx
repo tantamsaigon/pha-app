@@ -160,7 +160,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
               type="time"
               value={foodTime}
               onChange={(e) => setFoodTime(e.target.value)}
-              className="col-span-3 px-2 py-2 text-xs text-slate-900 bg-white border rounded-lg focus:outline-indigo-500"
+              className="col-span-3 px-2 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
           </div>
         </div>
@@ -190,13 +190,13 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
               type="time"
               value={activityStart}
               onChange={(e) => setActivityStart(e.target.value)}
-              className="col-span-3 px-2 py-2 text-xs border rounded-lg focus:outline-indigo-500"
+              className="col-span-3 px-2 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
             <input
               type="time"
               value={activityEnd}
               onChange={(e) => setActivityEnd(e.target.value)}
-              className="col-span-3 px-2 py-2 text-xs border rounded-lg focus:outline-indigo-500"
+              className="col-span-3 px-2 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
           </div>
         </div>
