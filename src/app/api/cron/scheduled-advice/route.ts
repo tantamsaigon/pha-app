@@ -1,7 +1,7 @@
 // app/api/cron/scheduled-advice/route.ts
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
-import { subscriptions } from '../subscribe/route'; // Thay bằng DB query trong sản phẩm thực tế
+import { subscriptions } from '@/lib/subscriptions';
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT!,

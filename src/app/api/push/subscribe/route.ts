@@ -1,8 +1,6 @@
-// app/api/push/subscribe/route.ts
+// src/app/api/push/subscribe/route.ts
 import { NextResponse } from 'next/server';
-
-// Lưu trữ tạm trong bộ nhớ (Trong sản phẩm thực tế, lưu `subscription` vào Cơ sở dữ liệu: MongoDB, PostgreSQL, v.v.)
-export const subscriptions: any[] = [];
+import { subscriptions } from '@/lib/subscriptions';
 
 export async function POST(req: Request) {
   try {
