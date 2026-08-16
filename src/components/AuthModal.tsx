@@ -80,7 +80,7 @@ export default function AuthModal() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full mt-1 px-3 py-2 text-xs border rounded-lg focus:outline-indigo-500"
+              className="w-full mt-1 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
               placeholder="vudoan@gmail.com"
             />
           </div>
@@ -92,7 +92,7 @@ export default function AuthModal() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full mt-1 px-3 py-2 text-xs border rounded-lg focus:outline-indigo-500"
+              className="w-full mt-1 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
               placeholder="••••••••"
             />
           </div>
@@ -106,7 +106,7 @@ export default function AuthModal() {
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 text-xs border rounded-lg focus:outline-indigo-500"
+                  className="w-full mt-1 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
                   placeholder="Nguyễn Văn A"
                 />
               </div>
@@ -119,7 +119,7 @@ export default function AuthModal() {
                     required
                     value={birthYear}
                     onChange={(e) => setBirthYear(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 text-xs border rounded-lg focus:outline-indigo-500"
+                    className="w-full mt-1 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
                   />
                 </div>
                 <div>
@@ -127,7 +127,7 @@ export default function AuthModal() {
                   <select
                     value={bloodType}
                     onChange={(e) => setBloodType(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 text-xs border rounded-lg focus:outline-indigo-500 bg-white"
+                    className="w-full mt-1 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500 bg-white"
                   >
                     <option value="A">A</option>
                     <option value="B">B</option>
@@ -145,7 +145,7 @@ export default function AuthModal() {
                     required
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 text-xs border rounded-lg focus:outline-indigo-500"
+                    className="w-full mt-1 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
                   />
                 </div>
                 <div>
@@ -155,7 +155,7 @@ export default function AuthModal() {
                     required
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
-                    className="w-full mt-1 px-3 py-2 text-xs border rounded-lg focus:outline-indigo-500"
+                    className="w-full mt-1 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
                   />
                 </div>
               </div>
