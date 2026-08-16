@@ -1,1 +1,12 @@
 npm run dev
+
+https://pha-app.vercel.app/
+
+# 1. Gom tất cả các file đã sửa
+git add .
+
+# 2. Ghi chú nội dung vừa sửa lỗi
+git commit -m "Fix bug: cap nhat loi AI consultation"
+
+# 3. Đẩy code lên GitHub
+git push origin main

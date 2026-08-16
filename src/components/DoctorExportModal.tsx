@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, Download, Loader2, X, Stethoscope } from 'lucide-react';
+import { FileText, Download, Loader2, X, Stethoscope, Volume2, Square } from 'lucide-react';
+import { playGTTSQueue, stopTTS } from '@/lib/ttsHelper';
 
 type Timeframe = '1_week' | '1_month' | '3_months' | '6_months' | '1_year' | 'all';
 
@@ -10,9 +11,40 @@ export default function DoctorExportModal({ userProfile, healthLogs }: { userPro
   const [timeframe, setTimeframe] = useState<Timeframe>('1_month');
   const [loading, setLoading] = useState(false);
   const [report, setReport] = useState<any>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Hàm xử lý Bật/Tắt đọc gTTS
+  const handleToggleRead = () => {
+    if (isPlaying) {
+      stopTTS();
+      setIsPlaying(false);
+    } else {
+      if (!report) return;
+
+      setIsPlaying(true);
+
+      // Ghép nội dung báo cáo từ đối tượng `report` chính xác
+      const fullReportText = `
+        Báo cáo y khoa tổng hợp cho bác sĩ. 
+        Mục 1: Sinh hiệu và chỉ số tổng quan. BMI: ${report.vitalsSummary?.bmi || 'Không có'}. Huyết áp: ${report.vitalsSummary?.bloodPressure || 'Không có'}. Nhịp tim: ${report.vitalsSummary?.heartRate || 'Không có'}. Xét nghiệm: ${report.vitalsSummary?.labResults || 'Không có'}.
+        Mục 2: Tổng hợp diễn biến nhật ký. Dinh dưỡng và thuốc: ${report.logAnalysis?.nutritionSummary || 'Không có'}. Hoạt động: ${report.logAnalysis?.activitySummary || 'Không có'}. Diễn biến triệu chứng: ${report.logAnalysis?.symptomTrends || 'Không có'}.
+        Mục 3: Đề xuất chuyên môn cho bác sĩ. Nghi ngờ hoặc cần kiểm tra: ${report.doctorRecommendations?.suspectedIssues || 'Không có'}. Chỉ định đề xuất: ${report.doctorRecommendations?.suggestedTests || 'Không có'}. Định hướng điều trị: ${report.doctorRecommendations?.treatmentOrientation || 'Không có'}.
+      `;
+
+      playGTTSQueue(fullReportText, () => {
+        setIsPlaying(false);
+      });
+    }
+  };
+
+  // Hàm đóng Modal an toàn (dừng luôn tiếng đọc)
+  const handleCloseModal = () => {
+    stopTTS();
+    setIsPlaying(false);
+    setIsOpen(false);
+  };
 
   const timeframeLabels: Record<Timeframe, string> = {
-
     '1_week': '1 Tuần',
     '1_month': '1 Tháng',
     '3_months': '3 Tháng',
@@ -58,9 +90,10 @@ export default function DoctorExportModal({ userProfile, healthLogs }: { userPro
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-xl max-w-2xl w-full p-6 space-y-6 relative max-h-[90vh] overflow-y-auto">
+            {/* Nút đóng góc trên bên phải */}
             <button
-              onClick={() => setIsOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+              onClick={handleCloseModal}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-lg transition"
             >
               <X className="w-6 h-6" />
             </button>
@@ -108,12 +141,38 @@ export default function DoctorExportModal({ userProfile, healthLogs }: { userPro
               <div className="border border-teal-100 bg-teal-50/30 rounded-xl p-4 space-y-4 text-sm text-gray-800">
                 <div className="flex justify-between items-center border-b border-teal-200 pb-2">
                   <span className="font-bold text-teal-900">Báo Cáo Y Khoa Cho Bác Sĩ</span>
-                  <button
-                    onClick={() => window.print()}
-                    className="flex items-center gap-1 text-xs bg-teal-700 text-white px-3 py-1.5 rounded hover:bg-teal-800"
-                  >
-                    <Download className="w-4 h-4" /> In / Lưu PDF
-                  </button>
+                  
+                  {/* Nhóm nút công cụ Header Báo Cáo */}
+                  <div className="flex items-center gap-2">
+                    {/* NÚT gTTS ĐỌC BÁO CÁO */}
+                    <button
+                      type="button"
+                      onClick={handleToggleRead}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                        isPlaying
+                          ? 'bg-amber-500 hover:bg-amber-600 text-white animate-pulse'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      {isPlaying ? (
+                        <>
+                          <Square className="w-3.5 h-3.5 fill-current" /> Tạm Dừng Đọc
+                        </>
+                      ) : (
+                        <>
+                          <Volume2 className="w-3.5 h-3.5" /> Đọc Báo Cáo
+                        </>
+                      )}
+                    </button>
+
+                    {/* NÚT IN / LƯU PDF */}
+                    <button
+                      onClick={() => window.print()}
+                      className="flex items-center gap-1 text-xs bg-teal-700 text-white px-3 py-1.5 rounded-lg hover:bg-teal-800 font-semibold transition"
+                    >
+                      <Download className="w-3.5 h-3.5" /> In / Lưu PDF
+                    </button>
+                  </div>
                 </div>
 
                 {/* 1. Sinh hiệu & Tóm tắt chỉ số */}
