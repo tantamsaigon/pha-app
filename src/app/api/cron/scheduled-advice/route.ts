@@ -25,10 +25,6 @@ const TIME_CONFIGS: Record<string, { title: string; promptType: string }> = {
 };
 
 export async function GET(req: Request) {
-   // Thêm dòng này để kiểm tra log trên Vercel Dashboard
-  const now = new Date().toISOString();
-  console.log(`Cron Job triggered at UTC time: ${now}`);
-  
   // 1. Kiểm tra xác thực Bảo mật
   const authHeader = req.headers.get('authorization');
   if (
