@@ -47,28 +47,40 @@ export interface HealthLog {
   createdAt?: any;
 }
 
-// --- Bổ sung Interface cho Năng Lượng & Macros 6 giờ ---
-export interface MacroNutrients {
-  carbsGrams: number;    // Tinh bột (g)
-  proteinGrams: number;  // Đạm (g)
-  fatGrams: number;      // Chất béo (g)
+// --- Cấu trúc chi tiết Thực phẩm theo nhóm chất ---
+export interface MacroDetail {
+  grams: number;
+  foods: string[]; // Danh sách thực phẩm chứa nhóm chất này
+}
+
+export interface MacroNutrientsDetailed {
+  carbs: MacroDetail;   // Tinh bột
+  protein: MacroDetail; // Đạm
+  fat: MacroDetail;     // Chất béo
+}
+
+export interface ActivityBurnDetail {
+  activityName: string;
+  durationOrTime?: string;
+  caloriesBurned: number;
 }
 
 export interface EnergyBalance {
-  timeWindow: string;            // Ví dụ: "6 giờ gần nhất (12:00 - 18:00)"
-  caloriesConsumed: number;      // Calo nạp vào (kcal)
-  macrosConsumed: MacroNutrients;// Phân rã dinh dưỡng
-  foodBreakdown: string[];       // Nguồn thực phẩm nạp vào
-  caloriesBurned: number;        // Calo tiêu hao (kcal)
-  netCalories: number;           // Thừa/Thiếu (Consumed - Burned)
-  energyStatus: 'SURPLUS' | 'DEFICIT' | 'BALANCED'; // Trạng thái năng lượng
-  healthWarning: string;         // Cảnh báo nguy cơ (ví dụ: Tích mỡ/Béo phì, Suy dinh dưỡng/Teo cơ...)
+  timeWindow: string;                    // Ví dụ: "6 giờ gần nhất (13:48 - 19:48)"
+  caloriesConsumed: number;              // Calo nạp vào (kcal)
+  macrosConsumed: MacroNutrientsDetailed;// Phân rã chi tiết 3 nhóm chất + món ăn
+  caloriesBurned: number;                // Calo tiêu hao (kcal)
+  activityBreakdown: string[];           // Danh sách hoạt động & calo tiêu hao chi tiết
+  netCalories: number;                   // Thừa/Thiếu
+  energyStatus: 'SURPLUS' | 'DEFICIT' | 'BALANCED';
+  healthWarning: string;                 // Khuyên nghị điều chỉnh
 }
 
 export interface AIConsultationAdvice {
-  causeAnalysis: string;
-  firstAidAndCare?: string;
-  energyBalance6h?: EnergyBalance; // Trường mới
+  isSymptomResolved?: boolean;           // Đánh giá triệu chứng đã hết chưa
+  causeAnalysis: string;                 // Phân tích hoặc Lời chúc mừng + đánh giá nguy cơ
+  firstAidAndCare?: string;              // Hướng dẫn sơ cứu (nếu còn triệu chứng)
+  energyBalance6h?: EnergyBalance; 
   medicalRecommendation: string;
   nextMealMenu: string[];
   suggestedActivities: string;
