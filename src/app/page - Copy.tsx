@@ -12,7 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { fetchCurrentWeather, WeatherData } from '@/lib/weather';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { CloudSun, Bell, LogOut, Loader2, UserPen, LayoutDashboard, History, BarChart3 } from 'lucide-react';
+import { CloudSun, Bell, LogOut, Loader2, UserPen, LayoutDashboard, History, BarChart3, Bot } from 'lucide-react';
 import { registerPushNotification } from '@/lib/pushHelper';
 
 export default function Home() {
@@ -21,12 +21,22 @@ export default function Home() {
   const [healthLogs, setHealthLogs] = useState<any[]>([]);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'log' | 'history' | 'analytics'>('log');
+  const [activeTab, setActiveTab] = useState<'log' | 'ai' | 'history' | 'analytics'>('log');
+
+  // Lắng nghe URL params từ PWA Deep-link
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam === 'history' || tabParam === 'analytics' || tabParam === 'log' || tabParam === 'ai') {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
 
   const loadHealthLogs = async () => {
     if (!user) return;
     try {
-      // Chỉ lọc theo userId -> Firebase không bắt tạo Index nữa
       const q = query(
         collection(db, 'health_logs'),
         where('userId', '==', user.uid)
@@ -86,7 +96,7 @@ export default function Home() {
         <header className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-extrabold text-indigo-900">
-              Sổ Tay Sức Khỏe
+              Sổ Tay Sức Khỏe AI
             </h1>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-xs text-slate-500">
@@ -101,9 +111,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Cụm công cụ góc phải: Nhắc nhở + Thời tiết + Logout */}
+          {/* Cụm công cụ góc phải */}
           <div className="flex items-center gap-2">
-            {/* Nút Bật Nhắc Nhở PWA */}
             <button
               type="button"
               onClick={registerPushNotification}
@@ -113,7 +122,6 @@ export default function Home() {
               <Bell className="w-5 h-5" />
             </button>
 
-            {/* Weather Widget */}
             {weather && (
               <div className="flex items-center gap-2 bg-indigo-50/60 border border-indigo-100 px-3 py-2 rounded-xl text-xs text-indigo-900">
                 <CloudSun className="w-5 h-5 text-indigo-600" />
@@ -124,7 +132,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Nút Logout */}
             <button
               onClick={logout}
               title="Đăng xuất"
@@ -135,27 +142,38 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Tab Điều Hướng Feature B */}
-        <div className="flex bg-slate-200/60 p-1 rounded-xl gap-1 text-xs font-bold">
+        {/* Tab Điều Hướng Chính */}
+        <div className="flex bg-slate-200/60 p-1 rounded-xl gap-1 text-xs font-bold overflow-x-auto">
           <button
             onClick={() => setActiveTab('log')}
-            className={`flex-1 py-2 rounded-lg transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 min-w-[75px] py-2.5 rounded-lg transition flex items-center justify-center gap-1 ${
               activeTab === 'log' ? 'bg-white text-indigo-900 shadow-xs' : 'text-slate-600'
             }`}
           >
             <LayoutDashboard className="w-3.5 h-3.5" /> Nhập Liệu
           </button>
+
+          <button
+            onClick={() => setActiveTab('ai')}
+            className={`flex-1 min-w-[75px] py-2.5 rounded-lg transition flex items-center justify-center gap-1 ${
+              activeTab === 'ai' ? 'bg-white text-indigo-900 shadow-xs' : 'text-slate-600'
+            }`}
+          >
+            <Bot className="w-3.5 h-3.5 text-indigo-600" /> Tư Vấn AI
+          </button>
+
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex-1 py-2 rounded-lg transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 min-w-[75px] py-2.5 rounded-lg transition flex items-center justify-center gap-1 ${
               activeTab === 'history' ? 'bg-white text-indigo-900 shadow-xs' : 'text-slate-600'
             }`}
           >
             <History className="w-3.5 h-3.5" /> Nhật Ký
           </button>
+
           <button
             onClick={() => setActiveTab('analytics')}
-            className={`flex-1 py-2 rounded-lg transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 min-w-[75px] py-2.5 rounded-lg transition flex items-center justify-center gap-1 ${
               activeTab === 'analytics' ? 'bg-white text-indigo-900 shadow-xs' : 'text-slate-600'
             }`}
           >
@@ -163,9 +181,13 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Nội dung Tab */}
+        {/* Nội dung Tab hiển thị linh hoạt */}
         {activeTab === 'log' && (
           <HealthLogForm userId={user.uid} onSaveSuccess={loadHealthLogs} />
+        )}
+
+        {activeTab === 'ai' && (
+          <AIConsultation userProfile={userProfile} healthLogs={healthLogs} />
         )}
 
         {activeTab === 'history' && (
@@ -176,8 +198,7 @@ export default function Home() {
           <HealthAnalytics logs={healthLogs} />
         )}
 
-        {/* Tư Vấn AI & Xuất Dữ Liệu Bác Sĩ */}
-        <AIConsultation userProfile={userProfile} healthLogs={healthLogs} />
+        {/* Module Xuất Dữ Liệu Bác Sĩ giữ nguyên vị trí cố định bên dưới */}
         <DoctorExportModal userProfile={userProfile} healthLogs={healthLogs} />
 
         {/* Modal Chỉnh Sửa Profile */}

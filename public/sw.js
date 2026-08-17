@@ -10,14 +10,19 @@ self.addEventListener('install', (event) => {
 self.addEventListener('push', function (event) {
   if (!event.data) return;
 
-  const data = event.data.json();
+  let data = {};
+  try {
+    data = event.data.json();
+  } catch (e) {
+    data = { body: event.data.text() };
+  }
+
   const title = data.title || 'Tư Vấn Sức Khỏe AI';
   const options = {
-    body: data.body,
+    body: data.body || 'Bạn có thông báo mới',
     icon: '/icon-192x192.png',
     badge: '/badge-72x72.png',
-    data: { url: data.url || '/?tab=log' }, // Deep-link tab target
-    vibrate: [100, 50, 100],
+    data: { url: data.url || '/?tab=log' }, // Deep-link target tab
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -25,13 +30,12 @@ self.addEventListener('push', function (event) {
 
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  
-  // Lấy đường dẫn target tuyệt đối
-  const targetUrl = new URL(event.notification.data.url || '/', self.location.origin).href;
+
+  // Chuyển tới đường dẫn được truyền trong payload
+  const targetUrl = new URL(event.notification.data?.url || '/', self.location.origin).href;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Tìm cửa sổ/tab đang mở cùng Origin
       for (const client of clientList) {
         if ('focus' in client) {
           return client.focus().then((focusedClient) => {
@@ -41,7 +45,6 @@ self.addEventListener('notificationclick', function (event) {
           });
         }
       }
-      // Nếu chưa có tab nào mở thì mở mới
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }

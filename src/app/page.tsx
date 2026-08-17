@@ -115,7 +115,7 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={registerPushNotification}
+              onClick={() => registerPushNotification(user.uid)}
               title="Bật Nhắc Nhở Tự Động PWA"
               className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition rounded-xl flex items-center justify-center"
             >

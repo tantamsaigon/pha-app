@@ -192,4 +192,6 @@ pha-app/
 4. Bảo Mật & Tối Ưu Chi Phí BackendFirestore Security Rules:Đảm bảo đã siết chặt quy tắc bảo mật trên Firebase Console sao cho người dùng chỉ có thể read/write trên các document có userId == request.auth.uid.Rate Limit Cho AI API:Giới hạn số lần bấm nút "Tư Vấn Sức Khỏe AI" hoặc "Xuất Dữ Liệu Cho Bác Sĩ" (ví dụ: tối đa 5-10 lần/ngày/user) để tránh việc người dùng spam gây tăng chi phí OpenRouter API.  
 
 # C. FIX LỖI CHO PHIÊN BẢN V01
-Chỉnh hiển hiển thị keestqua tư vấn AI và lịch sử kết quả tư vấn nên hiển thị dạng tab không nên dùng cửa sổ popup
+3. Tăng Tương Tác & Trải Nghiệm PWA trên Di ĐộngNhắc Nhở Thông Minh Có Tính Tương Tác:
+- Khi Cron Job gửi thông báo PWA (ví dụ: "Đã đến giờ uống nước" hoặc "Gợi ý thực đơn tối"), bổ sung đường dẫn (deep link) khi người dùng chạm vào thông báo sẽ mở ngay đúng tab nhập liệu hoặc tab thực đơn.
+ -----> không nhận thống báo nào mặc dù trên iphone đã bật cho phép thông báo rồi.

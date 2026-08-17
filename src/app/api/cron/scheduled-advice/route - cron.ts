@@ -1,8 +1,9 @@
+// app/api/cron/scheduled-advice/route.ts
 import { NextResponse } from 'next/server';
 import webpush from 'web-push';
-import { db } from '@/lib/firebase';
-import { collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { subscriptions } from '@/lib/subscriptions';
 
+// Cấu hình Helper khởi tạo WebPush an toàn (tránh lỗi build Vercel)
 function initWebPush() {
   const subject = process.env.VAPID_SUBJECT || 'mailto:admin@example.com';
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '';
@@ -25,12 +26,9 @@ const TIME_CONFIGS: Record<string, { title: string; promptType: string }> = {
 };
 
 export async function GET(req: Request) {
-   // Thêm dòng này để kiểm tra log trên Vercel Dashboard
-  const now = new Date().toISOString();
-  console.log(`Cron Job triggered at UTC time: ${now}`);
-  
   // 1. Kiểm tra xác thực Bảo mật
   const authHeader = req.headers.get('authorization');
+  
   if (
     process.env.NODE_ENV === 'production' &&
     authHeader !== `Bearer ${process.env.CRON_SECRET}`
@@ -55,8 +53,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Khung giờ không hợp lệ' }, { status: 400 });
   }
 
-  // 4. Chuẩn bị nội dung tư vấn
-  const weatherText = 'Nắng nhẹ, 29°C';
+  // 4. Chuẩn bị nội dung tư vấn theo khung giờ
+  const weatherText = 'Nắng nhẹ, 29°C'; 
   let adviceMessage = '';
 
   if (config.promptType === 'lunch_menu') {
@@ -72,48 +70,15 @@ export async function GET(req: Request) {
   const payload = JSON.stringify({
     title: config.title,
     body: adviceMessage,
-    url: '/?tab=log',
+    url: '/',
   });
 
-  // 5. Lấy toàn bộ Push Subscriptions từ Firestore Database
-  const querySnapshot = await getDocs(collection(db, 'push_subscriptions'));
-  const subscriptions: any[] = [];
-  
-  querySnapshot.forEach((docSnap) => {
-    subscriptions.push({ id: docSnap.id, ref: docSnap.ref, ...docSnap.data() });
-  });
-
-  if (subscriptions.length === 0) {
-    return NextResponse.json({ success: true, message: 'Chưa có thiết bị nào đăng ký nhận tin' });
-  }
-
-  // 6. Gửi Push Notification tới từng thiết bị
-  let successCount = 0;
-  const pushPromises = subscriptions.map(async (sub) => {
-    try {
-      await webpush.sendNotification(
-        {
-          endpoint: sub.endpoint,
-          keys: sub.keys,
-        },
-        payload
-      );
-      successCount++;
-    } catch (err: any) {
-      console.error(`Lỗi gửi Push cho endpoint (${sub.endpoint}):`, err);
-      // Nếu token không còn hợp lệ (410 Gone / 404 Not Found), dọn dẹp xóa khỏi Firestore
-      if (err.statusCode === 410 || err.statusCode === 404) {
-        await deleteDoc(sub.ref);
-      }
-    }
-  });
+  // 5. Gửi Push Notification tới các thiết bị đã đăng ký
+  const pushPromises = subscriptions.map((sub) =>
+    webpush.sendNotification(sub, payload).catch((err) => console.error('Lỗi gửi Push:', err))
+  );
 
   await Promise.all(pushPromises);
 
-  return NextResponse.json({
-    success: true,
-    timeKey,
-    totalDevices: subscriptions.length,
-    sentSuccessCount: successCount,
-  });
+  return NextResponse.json({ success: true, timeKey, sentCount: subscriptions.length });
 }

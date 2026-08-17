@@ -1,5 +1,3 @@
-// lib/pushHelper.ts
-
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -11,38 +9,50 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
-export async function registerPushNotification() {
+export async function registerPushNotification(userId?: string) {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    alert('Trình duyệt không hỗ trợ Push Notification.');
+    alert('Trình duyệt hoặc thiết bị này không hỗ trợ Web Push Notification.');
     return;
   }
 
   // Xin quyền thông báo từ người dùng
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') {
-    alert('Bạn cần cho phép cấp quyền thông báo.');
+    alert('Bạn chưa cấp quyền nhận thông báo. Hãy kiểm tra lại Cài đặt trên iPhone.');
     return;
   }
 
-  // Đăng ký Service Worker
-  const registration = await navigator.serviceWorker.register('/sw.js');
-  await navigator.serviceWorker.ready;
+  try {
+    // Đăng ký Service Worker
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
 
-  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (!publicKey) return;
+    const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+    if (!publicKey) {
+      alert('Thiếu cấu hình NEXT_PUBLIC_VAPID_PUBLIC_KEY.');
+      return;
+    }
 
-  // Đăng ký Push Subscription
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(publicKey),
-  });
+    // Đăng ký Push Subscription với PushManager
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey),
+    });
 
-  // Gửi subscription token về Server lưu trữ
-  await fetch('/api/push/subscribe', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(subscription),
-  });
+    // Gửi thông tin subscription về API Backend
+    const res = await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription, userId: userId || null }),
+    });
 
-  alert('Đã kích hoạt thông báo tự động theo khung giờ thành công!');
+    if (res.ok) {
+      alert('Đã bật thành công thông báo nhắc nhở tự động!');
+    } else {
+      alert('Lỗi khi lưu thông tin đăng ký thông báo.');
+    }
+  } catch (error) {
+    console.error('Lỗi kích hoạt Push Notification:', error);
+    alert('Không thể kích hoạt thông báo. Hãy đảm bảo bạn đã Thêm ứng dụng vào Màn hình chính (A2HS).');
+  }
 }
