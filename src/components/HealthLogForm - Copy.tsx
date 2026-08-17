@@ -56,12 +56,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
     setLoading(true);
 
     try {
-      // Lấy ngày chuẩn theo Múi giờ Việt Nam (Asia/Ho_Chi_Minh) tránh lỗi UTC
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const today = `${year}-${month}-${day}`;
+      const today = new Date().toISOString().split('T')[0];
 
       // Quy tắc: Form nào điền dữ liệu thì mới lưu bản ghi đó vào Firestore
       if (foodName.trim()) {

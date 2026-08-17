@@ -23,10 +23,20 @@ export default function Home() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'log' | 'history' | 'analytics'>('log');
 
+  // Lắng nghe URL params từ PWA Deep-link (Mục C.1)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam === 'history' || tabParam === 'analytics' || tabParam === 'log') {
+        setActiveTab(tabParam as any);
+      }
+    }
+  }, []);
+
   const loadHealthLogs = async () => {
     if (!user) return;
     try {
-      // Chỉ lọc theo userId -> Firebase không bắt tạo Index nữa
       const q = query(
         collection(db, 'health_logs'),
         where('userId', '==', user.uid)
@@ -101,9 +111,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Cụm công cụ góc phải: Nhắc nhở + Thời tiết + Logout */}
+          {/* Cụm công cụ góc phải */}
           <div className="flex items-center gap-2">
-            {/* Nút Bật Nhắc Nhở PWA */}
             <button
               type="button"
               onClick={registerPushNotification}
@@ -113,7 +122,6 @@ export default function Home() {
               <Bell className="w-5 h-5" />
             </button>
 
-            {/* Weather Widget */}
             {weather && (
               <div className="flex items-center gap-2 bg-indigo-50/60 border border-indigo-100 px-3 py-2 rounded-xl text-xs text-indigo-900">
                 <CloudSun className="w-5 h-5 text-indigo-600" />
@@ -124,7 +132,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Nút Logout */}
             <button
               onClick={logout}
               title="Đăng xuất"

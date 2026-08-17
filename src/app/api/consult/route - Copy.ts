@@ -1,8 +1,34 @@
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 
 export async function POST(req: Request) {
   try {
     const { userProfile, healthLogs } = await req.json();
+
+    if (!userProfile?.uid) {
+      return NextResponse.json({ error: 'Xác thực người dùng không hợp lệ.' }, { status: 401 });
+    }
+
+    // --- BẢO VỆ CHI PHÍ: RATE LIMITING (Tối đa 10 lần tư vấn/ngày/user) ---
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const consultationsRef = collection(db, 'ai_consultations');
+    const q = query(
+      consultationsRef,
+      where('userId', '==', userProfile.uid),
+      where('timestamp', '>=', Timestamp.fromDate(startOfDay))
+    );
+    const dailyConsultations = await getDocs(q);
+
+    if (dailyConsultations.size >= 10) {
+      return NextResponse.json(
+        { error: 'Bạn đã đạt giới hạn 10 lượt tư vấn AI trong ngày. Vui lòng quay lại vào ngày mai!' },
+        { status: 429 }
+      );
+    }
+    // -----------------------------------------------------------------------
 
     const openRouterApiKey = process.env.OPENROUTER_API_KEY;
     if (!openRouterApiKey) {
@@ -12,7 +38,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Lấy thời gian thực
     const now = new Date();
     const thoi_gian_hien_tai = now.toLocaleString("vi-VN", {
       timeZone: "Asia/Ho_Chi_Minh",
@@ -20,7 +45,6 @@ export async function POST(req: Request) {
       timeStyle: "medium"
     });
 
-    // System Prompt thiết lập vai trò bác sĩ AI & quy tắc suy luận Biological Time
     const systemPrompt = `
 Bạn là Trợ lý AI Phân tích Sức khỏe Cá nhân (Sổ Tay Sức Khỏe).
 Thời gian hiện tại hệ thống: ${thoi_gian_hien_tai}
@@ -32,17 +56,16 @@ DƯỚI ĐÂY LÀ QUY TẮC SUY LUẬN SINH HỌC (BIOLOGICAL-TIME REASONING):
 3. Hoạt động: Phân tích mức độ tiêu hao năng lượng, phản ứng cơ bắp/trí não và tác động đến triệu chứng.
 
 YÊU CẦU ĐỊNH DẠNG PHẢN HỒI (JSON hợp lệ):
-Trả về nội dung dưới dạng một JSON object đúng cấu trúc sau (không thêm markdown ngoài khối json):
 {
-  "causeAnalysis": "Phân tích nguyên nhân sinh học chi tiết, liên kết giữa thực phẩm/thuốc/hoạt động và triệu chứng xuất hiện...",
-  "medicalRecommendation": "Lời khuyên theo dõi sức khỏe hoặc hướng xử lý phù hợp...",
+  "causeAnalysis": "Phân tích nguyên nhân sinh học chi tiết...",
+  "medicalRecommendation": "Lời khuyên theo dõi sức khỏe...",
   "nextMealMenu": [
     "Rau củ: ...",
     "Thịt/Cá: ...",
     "Cơm/Tinh bột: ...",
     "Canh: ..."
   ],
-  "suggestedActivities": "Đề xuất hoạt động thể chất/trí não tiếp theo..."
+  "suggestedActivities": "Đề xuất hoạt động tiếp theo..."
 }
 `;
 
@@ -54,25 +77,6 @@ Trả về nội dung dưới dạng một JSON object đúng cấu trúc sau (k
   
 - Nhật ký sức khỏe gần đây:
 ${JSON.stringify(healthLogs, null, 2)}
-
-- BÊN DƯỚI LÀ CÁC QUY TẮC BẮT BUỘC:
-  + Bạn phải trả lời các câu hỏi của bệnh nhân một cách chính xác, ngắn gọn, dễ hiểu, và thân thiện.
-  + Bạn nên hỏi thêm thông tin về các triệu chứng, tiền sử bệnh lý, và các yếu tố liên quan để đưa ra chẩn đoán chính xác.
-  + Bạn không được đưa ra các thông tin sai lệch, không chính xác, hoặc gây hiểu lầm.
-  + Bạn được đưa ra các chẩn đoán y tế để bệnh nhân hiểu rõ tình trạng sức khỏe của mình.
-  + Bạn đưa ra các biện pháp sơ cứu, chăm sóc sức khỏe, và các lời khuyên y tế phù hợp với tình trạng bệnh nhân.
-  + Bạn đưa ra các loại thuốc, liều lượng, và cách sử dụng thuốc một cách chính xác, an toàn, và phù hợp với tình trạng bệnh nhân.
-  + Bạn đề xuất các xét nghiệm, kiểm tra, và các biện pháp chẩn đoán y tế phù hợp với tình trạng bệnh nhân.
-  + Bạn đề xuất các phương pháp điều trị, phục hồi chức năng, và các biện pháp chăm sóc sức khỏe phù hợp với tình trạng bệnh nhân.
-  + Bạn đề xuất các biện pháp phòng ngừa, bảo vệ sức khỏe, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-  + Bạn đề xuất các chế độ ăn uống, tập luyện, và các thói quen sinh hoạt lành mạnh để bệnh nhân duy trì sức khỏe tốt.
-  + Bạn đề xuất các biện pháp hỗ trợ tâm lý, tinh thần, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-  + Bạn đề xuất các biện pháp hỗ trợ xã hội, cộng đồng, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-  + Bạn đề xuất các biện pháp hỗ trợ tài chính, bảo hiểm, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-  + Bạn đề xuất các biện pháp hỗ trợ pháp lý, tư vấn, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-  + Bạn đề xuất các bệnh viện, phòng khám, và các cơ sở y tế phù hợp với tình trạng bệnh nhân.
-  + Trả lời thật ngắn gọn (1-3 câu), ngắt câu rõ ràng bằng các dấu chấm, phẩy để hệ thống đọc nhanh hơn.
-Hãy phân tích nguyên nhân và đưa ra tư vấn phù hợp.
 `;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -95,8 +99,6 @@ Hãy phân tích nguyên nhân và đưa ra tư vấn phù hợp.
     });
 
     if (!response.ok) {
-      const errText = await response.text();
-      console.error('OpenRouter API Error:', errText);
       return NextResponse.json({ error: 'Lỗi khi gọi OpenRouter API' }, { status: 500 });
     }
 
@@ -106,7 +108,6 @@ Hãy phân tích nguyên nhân và đưa ra tư vấn phù hợp.
 
     return NextResponse.json({ success: true, advice: parsedAdvice });
   } catch (error: any) {
-    console.error('Consultation Error:', error);
     return NextResponse.json({ error: error.message || 'Lỗi xử lý hệ thống' }, { status: 500 });
   }
 }

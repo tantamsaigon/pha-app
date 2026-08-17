@@ -45,27 +45,50 @@ export async function POST(req: Request) {
       timeStyle: "medium"
     });
 
+    // Sắp xếp nhật ký theo thứ tự thời gian tăng dần để đảm bảo tính chuẩn xác
+    const sortedLogs = Array.isArray(healthLogs) 
+      ? [...healthLogs].sort((a, b) => {
+          const timeA = new Date(`${a.date || '1970-01-01'}T${a.data?.startTime || a.data?.consumedAt || a.data?.onsetTime || '00:00'}`).getTime();
+          const timeB = new Date(`${b.date || '1970-01-01'}T${b.data?.startTime || b.data?.consumedAt || b.data?.onsetTime || '00:00'}`).getTime();
+          return timeA - timeB;
+        })
+      : [];
+
     const systemPrompt = `
-Bạn là Trợ lý AI Phân tích Sức khỏe Cá nhân (Sổ Tay Sức Khỏe).
+Bạn là Trợ lý AI Phân tích Sức khỏe Cá nhân Chuyên sâu (PHA Health Assistant).
 Thời gian hiện tại hệ thống: ${thoi_gian_hien_tai}
-Nhiệm vụ của bạn là phân tích nguyên nhân triệu chứng dựa trên nhật ký thực phẩm/thuốc và hoạt động của người dùng.
 
-DƯỚI ĐÂY LÀ QUY TẮC SUY LUẬN SINH HỌC (BIOLOGICAL-TIME REASONING):
-1. Tiêu hóa thực phẩm: Phân tích thời gian tiêu hóa thực phẩm nạp vào, khả năng gây dị ứng, đầy hơi, tăng/giảm đường huyết.
-2. Dược động học: Phân tích thời gian phát tán/bán thải của thuốc và tương tác giữa thuốc với thực phẩm.
-3. Hoạt động: Phân tích mức độ tiêu hao năng lượng, phản ứng cơ bắp/trí não và tác động đến triệu chứng.
+==================================================
+QUY TẮC BẮT BUỘC VỀ THỜI GIAN & NGUYÊN NHÂN (TEMPORAL CAUSALITY):
+1. BẮT BUỘC kiểm tra mốc thời gian của từng sự kiện (Ngày + Giờ).
+2. TIỀN ĐỀ QUAN TRỌNG: Mọi sự kiện (ăn uống, thuốc, hoạt động) XẢY RA SAU mốc thời gian xuất hiện triệu chứng Tuyệt Đối KHÔNG ĐƯỢC coi là nguyên nhân gây ra triệu chứng đó. (Ví dụ: Ăn đu đủ lúc 07:12 KHÔNG THỂ là nguyên nhân gây tăng nhịp tim lúc 06:32 trước đó).
+3. Chỉ phân tích các nguyên nhân từ những thực phẩm, thuốc hoặc hoạt động đã diễn ra TRƯỚC thời điểm xuất hiện triệu chứng.
 
-YÊU CẦU ĐỊNH DẠNG PHẢN HỒI (JSON hợp lệ):
+==================================================
+QUY TẮC BẮT BUỘC VỀ NỘI DUNG TƯ VẤN VÀ Y TẾ:
+- Hỏi thêm thông tin về các triệu chứng, tiền sử bệnh lý, và các yếu tố liên quan để đưa ra chẩn đoán chính xác.
+- Tuyệt đối KHÔNG đưa ra các thông tin sai lệch, không chính xác, hoặc gây hiểu lầm.
+- Được phép đưa ra các chẩn đoán y tế sơ bộ để bệnh nhân hiểu rõ tình trạng sức khỏe.
+- Cung cấp các biện pháp SƠ CẤP CỨU khẩn cấp, phương tiện và biện pháp chăm sóc sức khỏe ban đầu trong lúc chờ gặp bác sĩ/đến bệnh viện.
+- Đề xuất loại thuốc, liều lượng và cách sử dụng chính xác, an toàn, phù hợp với tình trạng thể trạng.
+- Đề xuất các xét nghiệm, kiểm tra, cận lâm sàng, phương pháp điều trị, phục hồi chức năng và cơ sở y tế (bệnh viện/phòng khám) phù hợp.
+- Đề xuất biện pháp phòng ngừa, hỗ trợ tâm lý, tinh thần, xã hội, tài chính/bảo hiểm và tư vấn pháp lý y tế nếu cần.
+- Đề xuất THỰC ĐƠN BỮA KẾ TIẾP: Ưu tiên tối đa sử dụng các loại thực phẩm ĐÃ CÓ trong nhật ký database của người dùng. Nếu không đủ, mới đề xuất thêm các món ăn bình dân, giá rẻ, dễ mua ở địa phương.
+
+==================================================
+YÊU CẦU ĐỊNH DẠNG PHẢN HỒI (Trả về JSON HỢP LỆ duy nhất):
 {
-  "causeAnalysis": "Phân tích nguyên nhân sinh học chi tiết...",
-  "medicalRecommendation": "Lời khuyên theo dõi sức khỏe...",
+  "causeAnalysis": "Phân tích nguyên nhân sinh học chính xác theo thứ tự thời gian...",
+  "firstAidAndCare": "Hướng dẫn sơ cấp cứu khẩn cấp & xử lý nhanh trong lúc chờ đến bệnh viện...",
+  "medicalRecommendation": "Chẩn đoán sơ bộ, đề xuất thuốc/liều dùng, xét nghiệm, và cơ sở y tế khuyến nghị...",
   "nextMealMenu": [
     "Rau củ: ...",
     "Thịt/Cá: ...",
     "Cơm/Tinh bột: ...",
-    "Canh: ..."
+    "Canh/Khác: ..."
   ],
-  "suggestedActivities": "Đề xuất hoạt động tiếp theo..."
+  "suggestedActivities": "Đề xuất hoạt động, nghỉ ngơi, hỗ trợ tâm lý & phòng ngừa...",
+  "followUpQuestions": "Các câu hỏi cần hỏi thêm về tiền sử/triệu chứng để làm rõ..."
 }
 `;
 
@@ -74,9 +97,10 @@ YÊU CẦU ĐỊNH DẠNG PHẢN HỒI (JSON hợp lệ):
   + Cân nặng: ${userProfile?.weight || 'Chưa rõ'} kg
   + Chiều cao: ${userProfile?.height || 'Chưa rõ'} cm
   + Nhóm máu: ${userProfile?.bloodType || 'Chưa rõ'}
+  + Vị trí: ${userProfile?.location || 'Việt Nam'}
   
-- Nhật ký sức khỏe gần đây:
-${JSON.stringify(healthLogs, null, 2)}
+- Nhật ký sức khỏe gần đây (Đã được sắp xếp theo đúng trình tự thời gian):
+${JSON.stringify(sortedLogs, null, 2)}
 `;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -93,7 +117,7 @@ ${JSON.stringify(healthLogs, null, 2)}
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.3,
+        temperature: 0.2,
         response_format: { type: 'json_object' }
       }),
     });

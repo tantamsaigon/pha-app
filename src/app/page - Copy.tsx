@@ -26,15 +26,25 @@ export default function Home() {
   const loadHealthLogs = async () => {
     if (!user) return;
     try {
+      // Chỉ lọc theo userId -> Firebase không bắt tạo Index nữa
       const q = query(
         collection(db, 'health_logs'),
         where('userId', '==', user.uid)
       );
+
       const querySnapshot = await getDocs(q);
       const logs: any[] = [];
       querySnapshot.forEach((doc) => {
         logs.push({ id: doc.id, ...doc.data() });
       });
+
+      // Tự sắp xếp mới nhất lên đầu bằng JS
+      logs.sort((a, b) => {
+        const timeA = a.createdAt?.seconds || 0;
+        const timeB = b.createdAt?.seconds || 0;
+        return timeB - timeA;
+      });
+
       setHealthLogs(logs);
     } catch (error) {
       console.error('Lỗi khi tải nhật ký:', error);
@@ -71,8 +81,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6">
       <div className="max-w-2xl mx-auto space-y-6">
-        
-        {/* Header App & Cập nhật Profile */}
+
+        {/* Header App & Cụm Công Cụ */}
         <header className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-2xl font-extrabold text-indigo-900">
@@ -91,7 +101,19 @@ export default function Home() {
             </div>
           </div>
 
+          {/* Cụm công cụ góc phải: Nhắc nhở + Thời tiết + Logout */}
           <div className="flex items-center gap-2">
+            {/* Nút Bật Nhắc Nhở PWA */}
+            <button
+              type="button"
+              onClick={registerPushNotification}
+              title="Bật Nhắc Nhở Tự Động PWA"
+              className="p-2.5 text-amber-600 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition rounded-xl flex items-center justify-center"
+            >
+              <Bell className="w-5 h-5" />
+            </button>
+
+            {/* Weather Widget */}
             {weather && (
               <div className="flex items-center gap-2 bg-indigo-50/60 border border-indigo-100 px-3 py-2 rounded-xl text-xs text-indigo-900">
                 <CloudSun className="w-5 h-5 text-indigo-600" />
@@ -102,25 +124,16 @@ export default function Home() {
               </div>
             )}
 
+            {/* Nút Logout */}
             <button
               onClick={logout}
               title="Đăng xuất"
-              className="p-2 text-slate-400 hover:text-red-600 transition rounded-lg border border-slate-100 hover:bg-slate-50"
+              className="p-2.5 text-slate-400 hover:text-red-600 transition rounded-xl border border-slate-100 hover:bg-slate-50"
             >
               <LogOut className="w-5 h-5" />
             </button>
           </div>
         </header>
-
-        {/* Nút Bật Nhắc Nhở PWA */}
-        <button
-          type="button"
-          onClick={registerPushNotification}
-          className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-4 rounded-xl transition shadow-sm flex items-center justify-center gap-2 text-sm"
-        >
-          <Bell className="w-4 h-4" />
-          <span>Bật Nhắc Nhở Tự Động PWA</span>
-        </button>
 
         {/* Tab Điều Hướng Feature B */}
         <div className="flex bg-slate-200/60 p-1 rounded-xl gap-1 text-xs font-bold">
@@ -152,7 +165,7 @@ export default function Home() {
 
         {/* Nội dung Tab */}
         {activeTab === 'log' && (
-          <HealthLogForm userId={userProfile.uid} onSaveSuccess={loadHealthLogs} />
+          <HealthLogForm userId={user.uid} onSaveSuccess={loadHealthLogs} />
         )}
 
         {activeTab === 'history' && (

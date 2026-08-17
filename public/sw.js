@@ -16,7 +16,7 @@ self.addEventListener('push', function (event) {
     body: data.body,
     icon: '/icon-192x192.png',
     badge: '/badge-72x72.png',
-    data: { url: data.url || '/?tab=log' }, // Deep-link mở tab mong muốn
+    data: { url: data.url || '/?tab=log' }, // Deep-link tab target
     vibrate: [100, 50, 100],
   };
 
@@ -25,15 +25,23 @@ self.addEventListener('push', function (event) {
 
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
-  const targetUrl = event.notification.data.url;
+  
+  // Lấy đường dẫn target tuyệt đối
+  const targetUrl = new URL(event.notification.data.url || '/', self.location.origin).href;
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Tìm cửa sổ/tab đang mở cùng Origin
       for (const client of clientList) {
-        if (client.url.includes(targetUrl) && 'focus' in client) {
-          return client.focus();
+        if ('focus' in client) {
+          return client.focus().then((focusedClient) => {
+            if (focusedClient && 'navigate' in focusedClient) {
+              return focusedClient.navigate(targetUrl);
+            }
+          });
         }
       }
+      // Nếu chưa có tab nào mở thì mở mới
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
       }
