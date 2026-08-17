@@ -252,15 +252,15 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
             <div className="grid grid-cols-2 gap-2 text-center">
               <div className="bg-white p-2 rounded-lg border border-amber-100 shadow-sm">
                 <span className="text-xs text-gray-500 block">Nạp vào (Thực phẩm)</span>
-                <span className="text-base font-extrabold text-amber-700 flex items-center justify-center gap-0.5">
-                  <Flame className="w-4 h-4 text-orange-500" />
+                <span className="text-base font-extrabold text-blue-600 flex items-center justify-center gap-0.5">
+                  <Flame className="w-4 h-4 text-blue-500" />
                   +{eb.caloriesConsumed} kcal
                 </span>
               </div>
               <div className="bg-white p-2 rounded-lg border border-amber-100 shadow-sm">
                 <span className="text-xs text-gray-500 block">Tiêu hao (Vận động)</span>
-                <span className="text-base font-extrabold text-blue-600 flex items-center justify-center gap-0.5">
-                  <Activity className="w-4 h-4 text-blue-500" />
+                <span className="text-base font-extrabold text-amber-700 flex items-center justify-center gap-0.5">
+                  <Activity className="w-4 h-4 text-orange-500" />
                   -{eb.caloriesBurned} kcal
                 </span>
               </div>
