@@ -122,17 +122,70 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
       if (!dataToRead) return;
 
       setIsSpeaking(true);
-      const menuText = dataToRead.nextMealMenu?.length > 0 ? dataToRead.nextMealMenu.join(', ') : 'Không có';
-      const firstAidText = dataToRead.firstAid ? `Hướng dẫn sơ cứu: ${dataToRead.firstAid}.` : '';
 
+      // 1. Phân tích nguyên nhân / Trạng thái sức khỏe
+      const causeText = dataToRead.causeAnalysis ? `${dataToRead.causeAnalysis}. ` : '';
+
+      // 2. Hướng dẫn sơ cứu (nếu triệu chứng chưa hết)
+      const firstAidText = (!dataToRead.isSymptomResolved && dataToRead.firstAid) 
+        ? `Hướng dẫn sơ cứu: ${dataToRead.firstAid}. ` 
+        : '';
+
+      // 3. Thông tin Cân bằng Năng lượng & Dinh dưỡng (MỚI BỔ SUNG)
+      let energyText = '';
+      if (dataToRead.energyBalance6h) {
+        const eb = dataToRead.energyBalance6h;
+        energyText += `Phân tích năng lượng trong ${eb.timeWindow || '6 giờ qua'}: `;
+        energyText += `Năng lượng nạp vào là ${eb.caloriesConsumed} kcal, tiêu hao ${eb.caloriesBurned} kcal. `;
+
+        if (eb.macrosConsumed) {
+          const { carbs, protein, fat } = eb.macrosConsumed;
+          energyText += `Phân rã dinh dưỡng: `;
+          if (carbs) {
+            energyText += `Tinh bột ${carbs.grams} gam${carbs.foods?.length ? `, gồm các món ${carbs.foods.join(', ')}` : ''}. `;
+          }
+          if (protein) {
+            energyText += `Đạm ${protein.grams} gam${protein.foods?.length ? `, gồm các món ${protein.foods.join(', ')}` : ''}. `;
+          }
+          if (fat) {
+            energyText += `Chất béo ${fat.grams} gam${fat.foods?.length ? `, gồm các món ${fat.foods.join(', ')}` : ''}. `;
+          }
+        }
+
+        if (eb.activityBreakdown && eb.activityBreakdown.length > 0) {
+          energyText += `Các hoạt động tiêu hao gồm có: ${eb.activityBreakdown.join(', ')}. `;
+        }
+
+        if (eb.healthWarning) {
+          energyText += `Khuyên nghị năng lượng: ${eb.healthWarning}. `;
+        }
+      }
+
+      // 4. Lời khuyên y tế
+      const medicalText = dataToRead.medicalRecommendation 
+        ? `Lời khuyên y tế: ${dataToRead.medicalRecommendation}. ` 
+        : '';
+
+      // 5. Thực đơn tiếp theo
+      const menuText = dataToRead.nextMealMenu?.length > 0 
+        ? `Thực đơn gợi ý cho bữa tiếp theo gồm: ${dataToRead.nextMealMenu.join(', ')}. ` 
+        : '';
+
+      // 6. Hoạt động gợi ý
+      const activityText = dataToRead.suggestedActivities 
+        ? `Hoạt động gợi ý: ${dataToRead.suggestedActivities}.` 
+        : '';
+
+      // Ghép toàn bộ nội dung thành văn bản đọc hoàn chỉnh
       const fullTextToRead = `
-        Kết quả phân tích AI. 
-        ${dataToRead.causeAnalysis || ''}. 
+        Kết quả phân tích sức khỏe AI. 
+        ${causeText}
         ${firstAidText}
-        Lời khuyên y tế: ${dataToRead.medicalRecommendation || ''}. 
-        Thực đơn bữa tiếp theo: ${menuText}. 
-        Hoạt động gợi ý: ${dataToRead.suggestedActivities || ''}.
-      `;
+        ${energyText}
+        ${medicalText}
+        ${menuText}
+        ${activityText}
+      `.trim();
 
       playGTTSQueue(fullTextToRead, () => setIsSpeaking(false));
     }
