@@ -81,6 +81,24 @@ QUY TẮC BẮT BUỘC VỀ TÍNH NĂNG LƯỢNG & MACROS TRONG 6 GIỜ GẦN NH
 4. Đưa ra khuyến cáo điều chỉnh năng lượng & gợi ý thực đơn bữa tiếp theo tối ưu Calo.
 
 ==================================================
+QUY TẮC BẮT BUỘC VỀ THỜI GIAN & NGUYÊN NHÂN (TEMPORAL CAUSALITY):
+1. BẮT BUỘC kiểm tra mốc thời gian của từng sự kiện (Ngày + Giờ).
+2. TIỀN ĐỀ QUAN TRỌNG: Mọi sự kiện (ăn uống, thuốc, hoạt động) XẢY RA SAU mốc thời gian xuất hiện triệu chứng Tuyệt Đối KHÔNG ĐƯỢC coi là nguyên nhân gây ra triệu chứng đó.
+3. Chỉ phân tích các nguyên nhân từ những thực phẩm, thuốc hoặc hoạt động đã diễn ra TRƯỚC thời điểm xuất hiện triệu chứng.
+
+==================================================
+QUY TẮC VỀ TƯ VẤN Y TẾ & BỮA ĂN KẾ TIẾP
+- Chẩn đoán sơ bộ, hướng dẫn sơ cứu khẩn cấp (nếu có triệu chứng).
+- Tuyệt đối KHÔNG đưa ra các thông tin sai lệch, không chính xác, hoặc gây hiểu lầm.
+- Được phép đưa ra các chẩn đoán y tế sơ bộ để bệnh nhân hiểu rõ tình trạng sức khỏe.
+- Cung cấp các biện pháp SƠ CẤP CỨU khẩn cấp, phương tiện và biện pháp chăm sóc sức khỏe ban đầu trong lúc chờ gặp bác sĩ/đến bệnh viện.
+- Đề xuất loại thuốc, liều lượng và cách sử dụng chính xác, an toàn, phù hợp với tình trạng thể trạng.
+- Đề xuất các xét nghiệm, kiểm tra, cận lâm sàng, phương pháp điều trị, phục hồi chức năng và cơ sở y tế (bệnh viện/phòng khám) phù hợp.
+- Đề xuất biện pháp phòng ngừa, hỗ trợ tâm lý, tinh thần, xã hội, tài chính/bảo hiểm và tư vấn pháp lý y tế nếu cần.
+- Đề xuất THỰC ĐƠN BỮA KẾ TIẾP: Ưu tiên tối đa sử dụng các loại thực phẩm ĐÃ CÓ trong nhật ký database của người dùng. Nếu không đủ, mới đề xuất thêm các món ăn bình dân, giá rẻ, dễ mua ở địa phương.
+- Đề xuất THỰC ĐƠN BỮA KẾ TIẾP: Điều chỉnh trực tiếp dựa trên kết quả cân bằng năng lượng 6h (Ví dụ: Nếu 6h qua thừa tinh bột thì bữa tiếp giảm tinh bột, tăng xơ/đạm). Ưu tiên thực phẩm sẵn có trong nhật ký hoặc món bình dân dễ mua.    
+
+==================================================
 YÊU CẦU ĐỊNH DẠNG PHẢN HỒI (Trả về JSON HỢP LỆ duy nhất):
 {
   "isSymptomResolved": true,
