@@ -5,7 +5,7 @@ import { db } from '@/lib/firebase';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { 
   Bot, Sparkles, AlertTriangle, HelpCircle, Volume2, History, 
-  Loader2, Utensils, Activity, Calendar, ArrowLeft, RefreshCw 
+  Loader2, Utensils, Activity, Calendar, ArrowLeft, RefreshCw, FileText 
 } from 'lucide-react';
 
 interface AIConsultationProps {
@@ -21,56 +21,57 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
   const [activeSubTab, setActiveSubTab] = useState<'current' | 'history'>('current');
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<any | null>(null);
 
-  // Helper bóc tách chuỗi sạch từ mọi kiểu dữ liệu (String, Array, Object)
+  // Trích xuất chuỗi thuần từ bất kỳ kiểu dữ liệu nào (String, Array, Object)
   const extractCleanText = (val: any): string => {
     if (!val) return '';
     if (typeof val === 'string') return val;
-    if (Array.isArray(val)) return val.map(item => extractCleanText(item)).filter(Boolean).join('. ');
+    if (Array.isArray(val)) {
+      return val.map(item => extractCleanText(item)).filter(Boolean).join('. ');
+    }
     if (typeof val === 'object') {
       return Object.values(val).map(v => extractCleanText(v)).filter(Boolean).join('. ');
     }
     return String(val);
   };
 
-  // Helper tổng hợp toàn bộ các trường phân tích thành một đoạn tóm tắt đầy đủ cho danh sách lịch sử
-  const generateHistorySummary = (res: any): string => {
-    if (!res) return 'Không có dữ liệu';
-    const parts: string[] = [];
+  // Hàm chuẩn hóa dữ liệu trả về từ AI để luôn lấy đúng các mục dù AI dùng key nào
+  const parseConsultationData = (data: any) => {
+    if (!data) return {};
 
-    const cause = extractCleanText(res.summary || res.causeAnalysis);
-    if (cause) parts.push(cause);
+    // Tìm trường dữ liệu trong object chính hoặc object con lồng nhau
+    const findField = (...keys: string[]) => {
+      for (const key of keys) {
+        if (data[key] !== undefined && data[key] !== null) return data[key];
+      }
+      return null;
+    };
 
-    const advice = extractCleanText(res.advice || res.medicalRecommendation);
-    if (advice) parts.push(advice);
-
-    const firstAid = extractCleanText(res.firstAid || res.firstAidAndCare);
-    if (firstAid) parts.push(firstAid);
-
-    const menu = extractCleanText(res.nextMealMenu);
-    if (menu) parts.push(menu);
-
-    const activity = extractCleanText(res.suggestedActivities);
-    if (activity) parts.push(activity);
-
-    const questions = extractCleanText(res.followUpQuestions);
-    if (questions) parts.push(questions);
-
-    return parts.join(' - ') || 'Không có dữ liệu tóm tắt';
+    return {
+      summary: findField('summary', 'causeAnalysis', 'cause_analysis', 'tomTat', 'nguyenNhan'),
+      advice: findField('advice', 'medicalRecommendation', 'medical_recommendation', 'loiKhuyen', 'phanTich'),
+      firstAid: findField('firstAid', 'firstAidAndCare', 'first_aid', 'soCuu'),
+      nextMealMenu: findField('nextMealMenu', 'next_meal_menu', 'thucDon', 'dinhDuong'),
+      suggestedActivities: findField('suggestedActivities', 'suggested_activities', 'vanDong', 'hoatDong'),
+      followUpQuestions: findField('followUpQuestions', 'follow_up_questions', 'cauHoi', 'theoDoi'),
+      raw: data
+    };
   };
 
-  // Helper hàm render danh sách an toàn
-  const renderList = (value: any) => {
+  // Helper render danh sách/văn bản
+  const renderContentBlock = (value: any) => {
     if (!value) return null;
     if (Array.isArray(value)) {
       return (
-        <ul className="list-disc pl-4 space-y-1 mt-1">
+        <ul className="list-disc pl-4 space-y-1 mt-1 text-slate-700">
           {value.map((item, idx) => (
             <li key={idx}>{extractCleanText(item)}</li>
           ))}
         </ul>
       );
     }
-    return <p className="mt-0.5 text-slate-600 whitespace-pre-line">{extractCleanText(value)}</p>;
+    const text = extractCleanText(value);
+    if (!text) return null;
+    return <p className="mt-1 text-slate-700 whitespace-pre-line leading-relaxed">{text}</p>;
   };
 
   // Tải danh sách lịch sử tư vấn từ Firestore
@@ -134,8 +135,8 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
       if (data.error) throw new Error(data.error);
 
       setAiResult(data);
-      setSelectedHistoryItem(null); // Reset item lịch sử đang chọn để xem kết quả mới
-      setActiveSubTab('current'); // Tự chuyển qua tab kết quả mới nhất
+      setSelectedHistoryItem(null);
+      setActiveSubTab('current');
 
       if (userProfile?.uid) {
         await addDoc(collection(db, 'ai_consultations'), {
@@ -153,89 +154,104 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
     }
   };
 
-  // Render chi tiết kết quả tư vấn (dùng chung cho tư vấn mới & xem lại lịch sử)
-  const renderConsultationDetail = (data: any, titleSuffix?: string) => {
-    if (!data) return null;
+  // Render toàn bộ các khối phân tích y tế
+  const renderConsultationDetail = (rawData: any, titleSuffix?: string) => {
+    if (!rawData) return null;
+    const parsed = parseConsultationData(rawData);
+
+    // Chuẩn bị văn bản để phát âm thanh
+    const fullSpeechText = [
+      parsed.summary && `Tóm tắt: ${extractCleanText(parsed.summary)}`,
+      parsed.advice && `Lời khuyên: ${extractCleanText(parsed.advice)}`,
+      parsed.firstAid && `Sơ cứu: ${extractCleanText(parsed.firstAid)}`
+    ].filter(Boolean).join('. ');
+
     return (
-      <div className="space-y-4 bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 text-xs text-slate-700">
-        <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
-          <span className="font-bold text-indigo-900 text-sm">
-            {titleSuffix ? `Phân Tích (${titleSuffix})` : 'Kết Quả Phân Tích Mới Nhất'}
+      <div className="space-y-3.5 text-xs">
+        {/* Header Chi Tiết */}
+        <div className="flex justify-between items-center bg-indigo-50/80 p-3 rounded-xl border border-indigo-100">
+          <span className="font-bold text-indigo-900 text-sm flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-indigo-600" />
+            {titleSuffix ? `Bản Phân Tích (${titleSuffix})` : 'Kết Quả Phân Tích AI Mới Nhất'}
           </span>
-          <button
-            onClick={() =>
-              handleSpeak(
-                `${extractCleanText(data.summary || data.causeAnalysis)}. ${extractCleanText(
-                  data.advice || data.medicalRecommendation
-                )}`
-              )
-            }
-            className={`flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-md transition ${
-              isSpeaking ? 'bg-amber-100 text-amber-700' : 'bg-white text-indigo-700 hover:bg-indigo-100 border border-indigo-200'
-            }`}
-          >
-            <Volume2 className="w-3.5 h-3.5" />
-            {isSpeaking ? 'Đang đọc...' : 'Đọc lời khuyên'}
-          </button>
+          {fullSpeechText && (
+            <button
+              onClick={() => handleSpeak(fullSpeechText)}
+              className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg transition ${
+                isSpeaking 
+                  ? 'bg-amber-100 text-amber-700 border border-amber-300' 
+                  : 'bg-white text-indigo-700 hover:bg-indigo-100 border border-indigo-200 shadow-xs'
+              }`}
+            >
+              <Volume2 className="w-3.5 h-3.5" />
+              {isSpeaking ? 'Đang đọc...' : 'Đọc kết quả'}
+            </button>
+          )}
         </div>
 
-        {/* Phân tích nguyên nhân / Tóm tắt */}
-        {(data.summary || data.causeAnalysis) && (
-          <div>
-            <p className="font-bold text-slate-800">Tóm tắt / Nguyên nhân:</p>
-            {renderList(data.summary || data.causeAnalysis)}
+        {/* 1. Tóm Tắt & Phân Tích Nguyên Nhân */}
+        {parsed.summary && (
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+            <div className="flex items-center gap-1.5 font-bold text-slate-800 text-xs">
+              <FileText className="w-4 h-4 text-slate-600" />
+              Phân Tích & Nguyên Nhân
+            </div>
+            {renderContentBlock(parsed.summary)}
           </div>
         )}
 
-        {/* Lời khuyên Y Tế / Khuyến Nghị */}
-        {(data.advice || data.medicalRecommendation) && (
-          <div>
-            <p className="font-bold text-slate-800">Lời khuyên chuyên môn:</p>
-            {renderList(data.advice || data.medicalRecommendation)}
+        {/* 2. Lời Khuyên Chuyên Môn / Y Tế */}
+        {parsed.advice && (
+          <div className="p-3.5 bg-indigo-50/50 border border-indigo-200/80 rounded-xl space-y-1">
+            <div className="flex items-center gap-1.5 font-bold text-indigo-900 text-xs">
+              <Bot className="w-4 h-4 text-indigo-600" />
+              Lời Khuyên & Khuyến Nghị Chuyên Môn
+            </div>
+            {renderContentBlock(parsed.advice)}
           </div>
         )}
 
-        {/* Sơ cứu / Chăm sóc */}
-        {(data.firstAid || data.firstAidAndCare) && (
-          <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
-            <div className="flex items-center gap-1.5 font-bold mb-1">
+        {/* 3. Sơ Cứu & Khẩn Cấp */}
+        {parsed.firstAid && (
+          <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+            <div className="flex items-center gap-1.5 font-bold text-amber-900 text-xs">
               <AlertTriangle className="w-4 h-4 text-amber-600" />
-              Sơ cứu & Chăm sóc:
+              Hướng Dẫn Sơ Cứu & Chăm Sóc Khẩn Cấp
             </div>
-            {renderList(data.firstAid || data.firstAidAndCare)}
+            {renderContentBlock(parsed.firstAid)}
           </div>
         )}
 
-        {/* Thói quen ăn uống tiếp theo */}
-        {data.nextMealMenu && (
-          <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800">
-            <div className="flex items-center gap-1.5 font-bold mb-1">
+        {/* 4. Gợi Ý Thực Đơn Dinh Dưỡng */}
+        {parsed.nextMealMenu && (
+          <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1">
+            <div className="flex items-center gap-1.5 font-bold text-emerald-900 text-xs">
               <Utensils className="w-4 h-4 text-emerald-600" />
-              Gợi ý thực đơn tiếp theo:
+              Gợi Ý Thực Đơn Bữa Ăn Tiếp Theo
             </div>
-            {renderList(data.nextMealMenu)}
+            {renderContentBlock(parsed.nextMealMenu)}
           </div>
         )}
 
-        {/* Vận động / Hoạt động */}
-        {data.suggestedActivities && (
-          <div className="p-2.5 bg-purple-50 border border-purple-200 rounded-lg text-purple-800">
-            <div className="flex items-center gap-1.5 font-bold mb-1">
+        {/* 5. Vận Động & Hoạt Động */}
+        {parsed.suggestedActivities && (
+          <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-xl space-y-1">
+            <div className="flex items-center gap-1.5 font-bold text-purple-900 text-xs">
               <Activity className="w-4 h-4 text-purple-600" />
-              Vận động & Khuyên dùng:
+              Hoạt Động & Bài Tập Phù Hợp
             </div>
-            {renderList(data.suggestedActivities)}
+            {renderContentBlock(parsed.suggestedActivities)}
           </div>
         )}
 
-        {/* Câu hỏi theo dõi */}
-        {data.followUpQuestions && (
-          <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
-            <div className="flex items-center gap-1.5 font-bold mb-1">
+        {/* 6. Gợi Ý Theo Dõi Thêm */}
+        {parsed.followUpQuestions && (
+          <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
+            <div className="flex items-center gap-1.5 font-bold text-blue-900 text-xs">
               <HelpCircle className="w-4 h-4 text-blue-600" />
-              Gợi ý theo dõi thêm:
+              Câu Hỏi / Triệu Chứng Cần Theo Dõi Thêm
             </div>
-            {renderList(data.followUpQuestions)}
+            {renderContentBlock(parsed.followUpQuestions)}
           </div>
         )}
       </div>
@@ -361,8 +377,11 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
                 </div>
               ) : (
                 historyList.map((item, index) => {
-                  const res = item.result || {};
-                  const summaryText = generateHistorySummary(res);
+                  const parsed = parseConsultationData(item.result);
+                  const previewText = 
+                    extractCleanText(parsed.summary) || 
+                    extractCleanText(parsed.advice) || 
+                    'Bản ghi tư vấn y tế';
 
                   return (
                     <div
@@ -382,7 +401,7 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
                         </span>
                       </div>
                       <p className="line-clamp-2 text-slate-600 leading-relaxed pl-5">
-                        {summaryText}
+                        {previewText}
                       </p>
                     </div>
                   );
