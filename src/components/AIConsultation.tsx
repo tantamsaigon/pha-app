@@ -321,7 +321,7 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
             {/* Khuyên nghị AI */}
             {eb.healthWarning && (
               <p className="text-xs text-amber-900 bg-amber-100/80 p-2 rounded-lg leading-relaxed font-medium">
-                💡 <b>Khuyên nghị AI:</b> {eb.healthWarning}
+                💡 <b>Khuyên nghị:</b> {eb.healthWarning}
               </p>
             )}
           </div>
@@ -338,7 +338,7 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
         {/* 🥗 Thực Đơn Bữa Tiếp Theo */}
         {data.nextMealMenu && data.nextMealMenu.length > 0 && (
           <div>
-            <h4 className="font-semibold text-orange-700">🥗 Thực Đơn Bữa Tiếp Theo (Tối Ưu Calo):</h4>
+            <h4 className="font-semibold text-orange-700">🥗 Thực Đơn Bữa Tiếp Theo:</h4>
             <ul className="list-disc list-inside text-sm text-gray-600 mt-1 space-y-1">
               {data.nextMealMenu.map((item, idx) => (
                 <li key={idx}>{item}</li>
