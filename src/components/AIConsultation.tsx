@@ -21,12 +21,17 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
   const [activeSubTab, setActiveSubTab] = useState<'current' | 'history'>('current');
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<any | null>(null);
 
-  // Helper hàm ép kiểu hiển thị văn bản an toàn chống lỗi React #31
-  const renderText = (value: any): string => {
-    if (!value) return '';
-    if (typeof value === 'string') return value;
-    if (typeof value === 'object') return JSON.stringify(value, null, 2);
-    return String(value);
+  // Helper bóc tách chuỗi sạch từ mọi kiểu dữ liệu (String, Array, Object)
+  const extractCleanText = (val: any): string => {
+    if (!val) return '';
+    if (typeof val === 'string') return val;
+    if (Array.isArray(val)) return val.map(item => extractCleanText(item)).join(' ');
+    if (typeof val === 'object') {
+      const innerVal = val.summary || val.causeAnalysis || val.advice || val.medicalRecommendation || val.suggestedActivities || val.followUpQuestions;
+      if (innerVal) return extractCleanText(innerVal);
+      return Object.values(val).map(v => extractCleanText(v)).join(' ');
+    }
+    return String(val);
   };
 
   // Helper hàm render danh sách an toàn
@@ -36,12 +41,12 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
       return (
         <ul className="list-disc pl-4 space-y-1 mt-1">
           {value.map((item, idx) => (
-            <li key={idx}>{renderText(item)}</li>
+            <li key={idx}>{extractCleanText(item)}</li>
           ))}
         </ul>
       );
     }
-    return <p className="mt-0.5 text-slate-600 whitespace-pre-line">{renderText(value)}</p>;
+    return <p className="mt-0.5 text-slate-600 whitespace-pre-line">{extractCleanText(value)}</p>;
   };
 
   // Tải danh sách lịch sử tư vấn từ Firestore
@@ -136,7 +141,7 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
           <button
             onClick={() =>
               handleSpeak(
-                `${renderText(data.summary || data.causeAnalysis)}. ${renderText(
+                `${extractCleanText(data.summary || data.causeAnalysis)}. ${extractCleanText(
                   data.advice || data.medicalRecommendation
                 )}`
               )
@@ -333,11 +338,18 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
               ) : (
                 historyList.map((item, index) => {
                   const res = item.result || {};
-                  const summaryText =
-                    renderText(res.summary) ||
-                    renderText(res.causeAnalysis) ||
-                    renderText(res.advice) ||
-                    'Không có dữ liệu tóm tắt';
+
+                  const rawSummary = 
+                    res.summary || 
+                    res.causeAnalysis || 
+                    res.advice || 
+                    res.medicalRecommendation || 
+                    res.suggestedActivities || 
+                    res.firstAid || 
+                    res.firstAidAndCare || 
+                    res.followUpQuestions;
+
+                  const summaryText = extractCleanText(rawSummary) || 'Không có dữ liệu tóm tắt';
 
                   return (
                     <div
