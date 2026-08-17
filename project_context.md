@@ -192,29 +192,4 @@ pha-app/
 4. Bảo Mật & Tối Ưu Chi Phí BackendFirestore Security Rules:Đảm bảo đã siết chặt quy tắc bảo mật trên Firebase Console sao cho người dùng chỉ có thể read/write trên các document có userId == request.auth.uid.Rate Limit Cho AI API:Giới hạn số lần bấm nút "Tư Vấn Sức Khỏe AI" hoặc "Xuất Dữ Liệu Cho Bác Sĩ" (ví dụ: tối đa 5-10 lần/ngày/user) để tránh việc người dùng spam gây tăng chi phí OpenRouter API.  
 
 # C. FIX LỖI CHO PHIÊN BẢN V01
-1. Mục 3. Tăng Tương Tác & Trải Nghiệm PWA trên Di ĐộngNhắc Nhở Thông Minh Có Tính Tương Tác:
-- Khi Cron Job gửi thông báo PWA (ví dụ: "Đã đến giờ uống nước" hoặc "Gợi ý thực đơn tối"), bổ sung đường dẫn (deep link) khi người dùng chạm vào thông báo sẽ mở ngay đúng tab nhập liệu hoặc tab thực đơn.--->không thấy thông báo nhắc như kế hoạch
-
-2. Cải tiến promt của AI : 
- 2.1 hiện phân tích khhong logic về thời gian về thứ tự của các sự kiện trong database , vi dụ :
-" Người dùng có triệu chứng 'Nhịp tim 114 lúc chạy bộ' vào lúc 06:32. Nguyên nhân có thể do hoạt động thể dục chạy bộ kéo dài từ 05:48 đến 06:31, kết hợp với việc uống nước và ăn đu đủ chín trước đó. Đu đủ chín có thể gây tăng nhẹ đường huyết, nhưng không đáng kể. Nhịp tim tăng cao là phản ứng bình thường khi vận động mạnh, đặc biệt là chạy bộ. Người dùng cũng có triệu chứng 'Sáng ngủ dậy trong cổ có ít đờm' vào lúc 04:48, có thể do dị ứng nhẹ hoặc thay đổi thời tiết."
------> việc ăn đu đủ ghi trong database lúc 7:12, còn nhịp tim cao lúc 6:32 trước đó. vậy nguyên nhân khhong phải do ăn đu đủ
-
-2.2 Ai tư vấn đề xuất món ăn cho bữa kế tiếp phải ưu tiên dùng các loại đã có trong database, nếu không có thì mới chọn các món bình dân , rẽ , dễ mua ở khu vực người dùng.
-
-2.3 AI đề xuất các loại thuốc, phương tiện, biện pháp để sơ cấp cứu cho người dùng trong lúc chờ đến bác sĩ , bệnh viện
-2.4 QUY TẮC BẮT BUỘC:
-- Bạn nên hỏi thêm thông tin về các triệu chứng, tiền sử bệnh lý, và các yếu tố liên quan để đưa ra chẩn đoán chính xác.
-- Bạn không được đưa ra các thông tin sai lệch, không chính xác, hoặc gây hiểu lầm.
-- Bạn được đưa ra các chẩn đoán y tế để bệnh nhân hiểu rõ tình trạng sức khỏe của mình.
-- Bạn đưa ra các biện pháp sơ cứu, chăm sóc sức khỏe, và các lời khuyên y tế phù hợp với tình trạng bệnh nhân.
-- Bạn đưa ra các loại thuốc, liều lượng, và cách sử dụng thuốc một cách chính xác, an toàn, và phù hợp với tình trạng bệnh nhân.
-- Bạn đề xuất các xét nghiệm, kiểm tra, và các biện pháp chẩn đoán y tế phù hợp với tình trạng bệnh nhân.
-- Bạn đề xuất các phương pháp điều trị, phục hồi chức năng, và các biện pháp chăm sóc sức khỏe phù hợp với tình trạng bệnh nhân.
-- Bạn đề xuất các biện pháp phòng ngừa, bảo vệ sức khỏe, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-- Bạn đề xuất các chế độ ăn uống, tập luyện, và các thói quen sinh hoạt lành mạnh để bệnh nhân duy trì sức khỏe tốt.
-- Bạn đề xuất các biện pháp hỗ trợ tâm lý, tinh thần, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-- Bạn đề xuất các biện pháp hỗ trợ xã hội, cộng đồng, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-- Bạn đề xuất các biện pháp hỗ trợ tài chính, bảo hiểm, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-- Bạn đề xuất các biện pháp hỗ trợ pháp lý, tư vấn, và các lời khuyên y tế để bệnh nhân duy trì sức khỏe tốt.
-- Bạn đề xuất các bệnh viện, phòng khám, và các cơ sở y tế phù hợp với tình trạng bệnh nhân.
+Chỉnh hiển hiển thị keestqua tư vấn AI và lịch sử kết quả tư vấn nên hiển thị dạng tab không nên dùng cửa sổ popup
