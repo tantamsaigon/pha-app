@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 import { Bot, Sparkles, AlertTriangle, HelpCircle, Volume2, History, X, Loader2 } from 'lucide-react';
 
 interface AIConsultationProps {
@@ -17,7 +17,7 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
-  // Tải danh sách các lần tư vấn cũ từ Firestore
+  // Tải danh sách lịch sử tư vấn từ Firestore
   const loadConsultationHistory = async () => {
     if (!userProfile?.uid) return;
     try {
@@ -31,7 +31,6 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
         list.push({ id: doc.id, ...doc.data() });
       });
 
-      // Sắp xếp mới nhất lên đầu
       list.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
       setHistoryList(list);
     } catch (err) {
@@ -43,7 +42,7 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
     loadConsultationHistory();
   }, [userProfile]);
 
-  // Hàm đọc lời khuyên AI bằng Text-to-Speech
+  // Đọc lời khuyên bằng Voice
   const handleSpeak = (text: string) => {
     if (!('speechSynthesis' in window)) {
       alert('Trình duyệt không hỗ trợ đọc giọng nói.');
@@ -65,7 +64,7 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
     window.speechSynthesis.speak(utterance);
   };
 
-  // Hàm gọi AI Tư Vấn
+  // Gọi API phân tích AI
   const handleConsult = async () => {
     setLoading(true);
     try {
@@ -80,14 +79,13 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
 
       setAiResult(data);
 
-      // Lưu kết quả tư vấn vào Firestore
       if (userProfile?.uid) {
         await addDoc(collection(db, 'ai_consultations'), {
           userId: userProfile.uid,
           result: data,
           createdAt: serverTimestamp(),
         });
-        loadConsultationHistory(); // Cập nhật lại danh sách lịch sử
+        loadConsultationHistory();
       }
     } catch (err: any) {
       alert('Không thể kết nối với AI. Vui lòng thử lại sau!');
@@ -99,92 +97,99 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
 
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-      {/* Header & Nút Thao Tác */}
-      <div className="flex items-center justify-between border-b pb-3">
-        <div className="flex items-center gap-2">
-          <Bot className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-lg font-bold text-slate-800">Tư Vấn Sức Khỏe AI</h2>
-        </div>
+      {/* Header giữ nguyên như cũ */}
+      <div className="flex items-center gap-2 border-b pb-3">
+        <Bot className="w-5 h-5 text-indigo-600" />
+        <h2 className="text-lg font-bold text-slate-800">Tư Vấn Sức Khỏe AI</h2>
+      </div>
 
-        <div className="flex items-center gap-2">
-          {/* NÚT XEM LỊCH SỬ TƯ VẤN CŨ */}
-          <button
-            onClick={() => setShowHistoryModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
-          >
-            <History className="w-3.5 h-3.5" />
-            Lịch sử ({historyList.length})
-          </button>
+      {/* Khung chính theo layout cũ */}
+      <div className="space-y-4">
+        {aiResult ? (
+          <div className="space-y-4 bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 text-xs text-slate-700">
+            <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
+              <span className="font-bold text-indigo-900 text-sm">Kết Quả Phân Tích</span>
+              <button
+                onClick={() => handleSpeak(`${aiResult.summary}. ${aiResult.advice}`)}
+                className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-md transition ${
+                  isSpeaking ? 'bg-amber-100 text-amber-700' : 'bg-white text-indigo-700 hover:bg-indigo-100'
+                }`}
+              >
+                <Volume2 className="w-3.5 h-3.5" />
+                {isSpeaking ? 'Đang đọc...' : 'Đọc lời khuyên'}
+              </button>
+            </div>
 
+            <div>
+              <p className="font-bold text-slate-800">Tóm tắt tình trạng:</p>
+              <p className="mt-0.5 text-slate-600">{aiResult.summary}</p>
+            </div>
+
+            <div>
+              <p className="font-bold text-slate-800">Lời khuyên từ AI:</p>
+              <p className="mt-0.5 text-slate-600 whitespace-pre-line">{aiResult.advice}</p>
+            </div>
+
+            {aiResult.firstAid && (
+              <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+                <div className="flex items-center gap-1.5 font-bold mb-1">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  Sơ cứu / Xử lý nhanh:
+                </div>
+                <p>{aiResult.firstAid}</p>
+              </div>
+            )}
+
+            {aiResult.followUpQuestions && (
+              <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
+                <div className="flex items-center gap-1.5 font-bold mb-1">
+                  <HelpCircle className="w-4 h-4 text-blue-600" />
+                  Gợi ý câu hỏi kiểm tra lại:
+                </div>
+                <p>{aiResult.followUpQuestions}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-slate-500 italic text-center py-2">
+            Nhấn "Tư Vấn Ngay" để AI phân tích toàn bộ nhật ký sức khỏe của bạn.
+          </p>
+        )}
+
+        {/* Hàng nút bấm phía dưới (Cấu trúc giao diện cũ) */}
+        <div className="flex items-center gap-2">
           <button
             onClick={handleConsult}
             disabled={loading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition disabled:opacity-50"
+            className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2 text-xs disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-            {loading ? 'Đang phân tích...' : 'Phân Tích Ngay'}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            {loading ? 'Đang Phân Tích...' : 'Tư Vấn Sức Khỏe AI'}
+          </button>
+
+          {/* Nút Xem lại kết quả tư vấn cũ */}
+          <button
+            type="button"
+            onClick={() => setShowHistoryModal(true)}
+            title="Xem lại kết quả tư vấn cũ"
+            className="p-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition flex items-center justify-center relative"
+          >
+            <History className="w-5 h-5" />
+            {historyList.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {historyList.length}
+              </span>
+            )}
           </button>
         </div>
       </div>
 
-      {/* Kết quả tư vấn mới nhất / Hiện tại */}
-      {aiResult ? (
-        <div className="space-y-4 bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 text-xs text-slate-700">
-          <div className="flex justify-between items-center border-b border-indigo-100 pb-2">
-            <span className="font-bold text-indigo-900 text-sm">Kết Quả Phân Tích</span>
-            <button
-              onClick={() => handleSpeak(`${aiResult.summary}. ${aiResult.advice}`)}
-              className={`flex items-center gap-1 text-[11px] font-semibold px-2 py-1 rounded-md transition ${
-                isSpeaking ? 'bg-amber-100 text-amber-700' : 'bg-white text-indigo-700 hover:bg-indigo-100'
-              }`}
-            >
-              <Volume2 className="w-3.5 h-3.5" />
-              {isSpeaking ? 'Đang đọc...' : 'Đọc lời khuyên'}
-            </button>
-          </div>
-
-          <div>
-            <p className="font-bold text-slate-800">Tóm tắt tình trạng:</p>
-            <p className="mt-0.5 text-slate-600">{aiResult.summary}</p>
-          </div>
-
-          <div>
-            <p className="font-bold text-slate-800">Lời khuyên từ AI:</p>
-            <p className="mt-0.5 text-slate-600 whitespace-pre-line">{aiResult.advice}</p>
-          </div>
-
-          {aiResult.firstAid && (
-            <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
-              <div className="flex items-center gap-1.5 font-bold mb-1">
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
-                Sơ cứu / Xử lý nhanh:
-              </div>
-              <p>{aiResult.firstAid}</p>
-            </div>
-          )}
-
-          {aiResult.followUpQuestions && (
-            <div className="p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-blue-900">
-              <div className="flex items-center gap-1.5 font-bold mb-1">
-                <HelpCircle className="w-4 h-4 text-blue-600" />
-                Gợi ý câu hỏi kiểm tra lại:
-              </div>
-              <p>{aiResult.followUpQuestions}</p>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p className="text-xs text-slate-500 italic text-center py-4">
-          Nhấn "Phân Tích Ngay" để AI tổng hợp nhật ký và đưa ra lời khuyên sức khỏe.
-        </p>
-      )}
-
-      {/* MODAL LỊCH SỬ TƯ VẤN CỦ */}
+      {/* Modal Lịch Sử Kết Quả Cũ */}
       {showHistoryModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-lg rounded-2xl p-5 shadow-xl space-y-4 max-h-[80vh] flex flex-col">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm">
                 <History className="w-4 h-4 text-indigo-600" />
                 Lịch Sử Phân Tích Sức Khỏe
               </h3>
@@ -209,7 +214,7 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
                       setAiResult(item.result);
                       setShowHistoryModal(false);
                     }}
-                    className="p-3 border rounded-xl hover:border-indigo-400 hover:bg-indigo-50/30 cursor-pointer transition text-xs space-y-1"
+                    className="p-3 border border-slate-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50/30 cursor-pointer transition text-xs space-y-1"
                   >
                     <div className="flex justify-between items-center font-bold text-slate-700">
                       <span>Mẫu phân tích #{historyList.length - index}</span>
