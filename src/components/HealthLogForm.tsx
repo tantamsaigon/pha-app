@@ -149,6 +149,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           <div className="grid grid-cols-12 gap-2">
             <input
               type="text"
+              autoComplete="on"
               placeholder="Cơm, Thuốc cảm..."
               value={foodName}
               onChange={(e) => setFoodName(e.target.value)}
@@ -156,6 +157,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
             />
             <input
               type="text"
+              autoComplete="on"
               placeholder="Số lượng, VD: 1 phần, 2 viên..."
               value={foodAmount}
               onChange={(e) => setFoodAmount(e.target.value)}
@@ -186,6 +188,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           <div className="grid grid-cols-12 gap-2">
             <input
               type="text"
+              autoComplete="on"
               placeholder="Chạy bộ, Làm việc..."
               value={activityName}
               onChange={(e) => setActivityName(e.target.value)}
@@ -222,6 +225,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           <div className="grid grid-cols-12 gap-2">
             <input
               type="text"
+              autoComplete="on"
               placeholder="Đau đầu, Bình thường..."
               value={symptomDesc}
               onChange={(e) => setSymptomDesc(e.target.value)}
