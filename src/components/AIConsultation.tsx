@@ -25,13 +25,37 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
   const extractCleanText = (val: any): string => {
     if (!val) return '';
     if (typeof val === 'string') return val;
-    if (Array.isArray(val)) return val.map(item => extractCleanText(item)).join(' ');
+    if (Array.isArray(val)) return val.map(item => extractCleanText(item)).filter(Boolean).join('. ');
     if (typeof val === 'object') {
-      const innerVal = val.summary || val.causeAnalysis || val.advice || val.medicalRecommendation || val.suggestedActivities || val.followUpQuestions;
-      if (innerVal) return extractCleanText(innerVal);
-      return Object.values(val).map(v => extractCleanText(v)).join(' ');
+      return Object.values(val).map(v => extractCleanText(v)).filter(Boolean).join('. ');
     }
     return String(val);
+  };
+
+  // Helper tổng hợp toàn bộ các trường phân tích thành một đoạn tóm tắt đầy đủ cho danh sách lịch sử
+  const generateHistorySummary = (res: any): string => {
+    if (!res) return 'Không có dữ liệu';
+    const parts: string[] = [];
+
+    const cause = extractCleanText(res.summary || res.causeAnalysis);
+    if (cause) parts.push(cause);
+
+    const advice = extractCleanText(res.advice || res.medicalRecommendation);
+    if (advice) parts.push(advice);
+
+    const firstAid = extractCleanText(res.firstAid || res.firstAidAndCare);
+    if (firstAid) parts.push(firstAid);
+
+    const menu = extractCleanText(res.nextMealMenu);
+    if (menu) parts.push(menu);
+
+    const activity = extractCleanText(res.suggestedActivities);
+    if (activity) parts.push(activity);
+
+    const questions = extractCleanText(res.followUpQuestions);
+    if (questions) parts.push(questions);
+
+    return parts.join(' - ') || 'Không có dữ liệu tóm tắt';
   };
 
   // Helper hàm render danh sách an toàn
@@ -338,18 +362,7 @@ export default function AIConsultation({ userProfile, healthLogs }: AIConsultati
               ) : (
                 historyList.map((item, index) => {
                   const res = item.result || {};
-
-                  const rawSummary = 
-                    res.summary || 
-                    res.causeAnalysis || 
-                    res.advice || 
-                    res.medicalRecommendation || 
-                    res.suggestedActivities || 
-                    res.firstAid || 
-                    res.firstAidAndCare || 
-                    res.followUpQuestions;
-
-                  const summaryText = extractCleanText(rawSummary) || 'Không có dữ liệu tóm tắt';
+                  const summaryText = generateHistorySummary(res);
 
                   return (
                     <div
