@@ -156,6 +156,11 @@ pha-app/
     │   ├── HealthLogForm.tsx        # [Phase 1] Form nhập liệu linh hoạt (Food, Activity, Symptom + iOS Dictation UI)
     │   ├── AIConsultation.tsx       # [Phase 2] Component tư vấn AI & đọc âm thanh (gTTS / Web Speech API)
     │   └── DoctorExportModal.tsx    # [Phase 3] Modal chọn mốc thời gian, tạo báo cáo & In/Lưu PDF cho Bác sĩ
+    │   ├── HealthAnalytics.tsx      # Component hiển thị biểu đồ & phân tích xu hướng triệu chứng
+    │   ├── HealthLogManager.tsx     # Component danh sách nhật ký (Xóa, chỉnh sửa bản ghi)
+    │   └── ProfileEditModal.tsx     # Component chỉnh sửa thông tin cá nhân (Cân nặng, chiều cao, nhóm máu...)
+
+    
     ├── context/
     │   └── AuthContext.tsx          # [Production] Context quản lý phiên đăng nhập & Lắng nghe Realtime Profile
     ├── lib/

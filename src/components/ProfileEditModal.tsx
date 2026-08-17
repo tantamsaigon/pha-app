@@ -79,7 +79,7 @@ export default function ProfileEditModal({ userProfile, isOpen, onClose }: Profi
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+              className="w-full px-3 py-2 text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
             />
           </div>
 
@@ -91,7 +91,7 @@ export default function ProfileEditModal({ userProfile, isOpen, onClose }: Profi
                 required
                 value={birthYear}
                 onChange={(e) => setBirthYear(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full px-3 py-2 text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               />
             </div>
             <div>
@@ -99,7 +99,7 @@ export default function ProfileEditModal({ userProfile, isOpen, onClose }: Profi
               <select
                 value={bloodType}
                 onChange={(e) => setBloodType(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full px-3 py-2 text-slate-900 bg-whiteborder border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               >
                 {['A', 'B', 'AB', 'O', 'Chưa rõ'].map((type) => (
                   <option key={type} value={type}>{type}</option>
@@ -119,7 +119,7 @@ export default function ProfileEditModal({ userProfile, isOpen, onClose }: Profi
                 required
                 value={weight}
                 onChange={(e) => setWeight(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full px-3 py-2 text-slate-900 bg-whiteborder border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               />
             </div>
             <div>
@@ -131,7 +131,7 @@ export default function ProfileEditModal({ userProfile, isOpen, onClose }: Profi
                 required
                 value={height}
                 onChange={(e) => setHeight(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="w-full px-3 py-2 text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
               />
             </div>
           </div>

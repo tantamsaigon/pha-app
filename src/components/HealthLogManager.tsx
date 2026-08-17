@@ -69,21 +69,21 @@ export default function HealthLogManager({ logs, onRefresh }: HealthLogManagerPr
             type="text"
             value={editData.foodName || ''}
             onChange={(e) => setEditData({ ...editData, foodName: e.target.value })}
-            className="px-2 py-1 border rounded text-xs w-1/2"
+            className="px-2 py-1 text-slate-900 bg-white border rounded text-xs w-1/2"
             placeholder="Tên món"
           />
           <input
             type="text"
             value={editData.amount || ''}
             onChange={(e) => setEditData({ ...editData, amount: e.target.value })}
-            className="px-2 py-1 border rounded text-xs w-1/4"
+            className="px-2 py-1 text-slate-900 bg-white border rounded text-xs w-1/4"
             placeholder="Khẩu phần"
           />
           <input
             type="time"
             value={editData.consumedAt || ''}
             onChange={(e) => setEditData({ ...editData, consumedAt: e.target.value })}
-            className="px-2 py-1 border rounded text-xs w-1/4"
+            className="px-2 py-1 text-slate-900 bg-white border rounded text-xs w-1/4"
           />
         </div>
       ) : (
@@ -101,20 +101,20 @@ export default function HealthLogManager({ logs, onRefresh }: HealthLogManagerPr
             type="text"
             value={editData.activityName || ''}
             onChange={(e) => setEditData({ ...editData, activityName: e.target.value })}
-            className="px-2 py-1 border rounded text-xs w-1/2"
+            className="px-2 py-1 text-slate-900 bg-white border rounded text-xs w-1/2"
             placeholder="Tên hoạt động"
           />
           <input
             type="time"
             value={editData.startTime || ''}
             onChange={(e) => setEditData({ ...editData, startTime: e.target.value })}
-            className="px-2 py-1 border rounded text-xs w-1/4"
+            className="px-2 py-1 text-slate-900 bg-white border rounded text-xs w-1/4"
           />
           <input
             type="time"
             value={editData.endTime || ''}
             onChange={(e) => setEditData({ ...editData, endTime: e.target.value })}
-            className="px-2 py-1 border rounded text-xs w-1/4"
+            className="px-2 py-1 text-slate-900 bg-white border rounded text-xs w-1/4"
           />
         </div>
       ) : (
@@ -132,14 +132,14 @@ export default function HealthLogManager({ logs, onRefresh }: HealthLogManagerPr
             type="text"
             value={editData.description || ''}
             onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-            className="px-2 py-1 border rounded text-xs flex-1"
+            className="px-2 py-1 text-slate-900 bg-white border rounded text-xs flex-1"
             placeholder="Mô tả triệu chứng"
           />
           <input
             type="time"
             value={editData.onsetTime || ''}
             onChange={(e) => setEditData({ ...editData, onsetTime: e.target.value })}
-            className="px-2 py-1 border rounded text-xs w-1/4"
+            className="px-2 py-1 text-slate-900 bg-whiteborder rounded text-xs w-1/4"
           />
         </div>
       ) : (
