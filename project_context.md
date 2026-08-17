@@ -191,7 +191,50 @@ pha-app/
 
 4. Bảo Mật & Tối Ưu Chi Phí BackendFirestore Security Rules:Đảm bảo đã siết chặt quy tắc bảo mật trên Firebase Console sao cho người dùng chỉ có thể read/write trên các document có userId == request.auth.uid.Rate Limit Cho AI API:Giới hạn số lần bấm nút "Tư Vấn Sức Khỏe AI" hoặc "Xuất Dữ Liệu Cho Bác Sĩ" (ví dụ: tối đa 5-10 lần/ngày/user) để tránh việc người dùng spam gây tăng chi phí OpenRouter API.  
 
-# C. FIX LỖI CHO PHIÊN BẢN V01
-3. Tăng Tương Tác & Trải Nghiệm PWA trên Di ĐộngNhắc Nhở Thông Minh Có Tính Tương Tác:
-- Khi Cron Job gửi thông báo PWA (ví dụ: "Đã đến giờ uống nước" hoặc "Gợi ý thực đơn tối"), bổ sung đường dẫn (deep link) khi người dùng chạm vào thông báo sẽ mở ngay đúng tab nhập liệu hoặc tab thực đơn.
- -----> không nhận thống báo nào mặc dù trên iphone đã bật cho phép thông báo rồi.
+# C. FIX LỖI CHO PHIÊN BẢN V02
+ Hiện tại tư vấn của AInhư bên dưới :
+ "🔍 Phân Tích Nguyên Nhân:
+Triệu chứng đau bụng đi cầu xuất hiện lúc 12:15 có thể liên quan đến việc ăn uống trước đó. Cụ thể, các thực phẩm như rau xà lách, diếp cá luộc, rau muống xào, cá saba kho, đầu cá hồi và canh cá có thể gây kích ứng đường tiêu hóa, đặc biệt nếu không được chế biến kỹ hoặc có vấn đề về vệ sinh. Đau bụng đi cầu thường là phản ứng của cơ thể để loại bỏ chất độc hoặc thức ăn không phù hợp.
+
+Hướng Dẫn Sơ Cứu Ban Đầu:
+1. Nghỉ ngơi và uống nhiều nước để giúp cơ thể đào thải độc tố. 2. Tránh ăn thêm thức ăn cứng hoặc khó tiêu trong vài giờ tiếp theo. 3. Theo dõi triệu chứng, nếu đau bụng kéo dài hoặc có dấu hiệu mất nước, cần đến cơ sở y tế ngay.
+
+🩺 Lời Khuyên Y Tế:
+Chẩn đoán sơ bộ: Rối loạn tiêu hóa nhẹ do thức ăn. Đề xuất: 1. Uống thuốc hỗ trợ tiêu hóa như men vi sinh hoặc thuốc giảm đau bụng nếu cần. 2. Nếu triệu chứng không cải thiện trong 24 giờ, cần đến bệnh viện để kiểm tra chi tiết.
+
+🥗 Thực Đơn Bữa Tiếp Theo:
+Rau củ: Rau luộc (rau muống, rau cải)
+Thịt/Cá: Cá hấp
+Cơm/Tinh bột: Cơm trắng
+Canh/Khác: Canh rau củ nhẹ
+🏃 Hoạt Động Gợi Ý:
+1. Nghỉ ngơi sau bữa ăn để hệ tiêu hóa hoạt động tốt hơn. 2. Tránh các hoạt động thể lực mạnh trong vài giờ sau khi ăn. 3. Theo dõi các triệu chứng và ghi chú lại để báo cáo với bác sĩ nếu cần."
+
+TA BỔ SUNG THÊM PHẦN tính toán năng lượng calori để từ đó khuyến cáo xu hướng ngắn hạn trong vòng 6 tiếng ( vòng đời của thực phẩm khi ăn vào) vi dụ sáng lúc 6:00 ta ăn sáng thì tính toán xem các thục phẩm / thuốc đã nộp vào
+trong vòng 6 giờ là tổng bao nhiêu năng lượng trong đó tinh bột bao nhiêu có từ loại thực phẩm nào đã ăn, đạm bao nhiêu, chất béo bao nhiêu?. rồi xem trong vong 6 giờ đó các hoạt động nào đã diễn ra và tốn bao nhiêu năng lượng,
+ta sẽ tính dc số năng lượng còn lại là thừa hay thiếu để khuyên nghi là sẽ béo phì, hay gầy ốm , suy dinh dưỡng, còi xướng teo cơ....và huyến nghị nên bổ sung hay hạn chế các loại thức ăn nào , để đè xuất cho bữa ăn tiếp theo cho phù hợp.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

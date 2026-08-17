@@ -1,15 +1,33 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Volume2, Square, Sparkles, Loader2, History, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Volume2, Square, Sparkles, Loader2, History, AlertTriangle, ArrowLeft, Flame, Zap, Activity } from 'lucide-react';
 import { playGTTSQueue, stopTTS } from '@/lib/ttsHelper';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
+
+interface MacroNutrients {
+  carbsGrams: number;
+  proteinGrams: number;
+  fatGrams: number;
+}
+
+interface EnergyBalance {
+  timeWindow: string;
+  caloriesConsumed: number;
+  macrosConsumed: MacroNutrients;
+  foodBreakdown: string[];
+  caloriesBurned: number;
+  netCalories: number;
+  energyStatus: 'SURPLUS' | 'DEFICIT' | 'BALANCED';
+  healthWarning: string;
+}
 
 interface Advice {
   causeAnalysis: string;
   medicalRecommendation: string;
   firstAid?: string;
+  energyBalance6h?: EnergyBalance;
   nextMealMenu: string[];
   suggestedActivities: string;
 }
@@ -65,6 +83,7 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
           causeAnalysis: data.causeAnalysis || data.summary || '',
           medicalRecommendation: data.medicalRecommendation || data.advice || '',
           firstAid: data.firstAid || data.firstAidAndCare || '',
+          energyBalance6h: data.energyBalance6h || undefined,
           nextMealMenu: Array.isArray(data.nextMealMenu) ? data.nextMealMenu : [],
           suggestedActivities: data.suggestedActivities || '',
         };
@@ -107,11 +126,17 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
         : 'Không có';
 
       const firstAidText = dataToRead.firstAid ? `Hướng dẫn sơ cứu: ${dataToRead.firstAid}.` : '';
+      
+      const eb = dataToRead.energyBalance6h;
+      const energyText = eb ? `
+        Đánh giá năng lượng 6 giờ qua: Tổng nạp vào ${eb.caloriesConsumed} calo, gồm ${eb.macrosConsumed?.carbsGrams || 0} gam tinh bột, ${eb.macrosConsumed?.proteinGrams || 0} gam đạm, và ${eb.macrosConsumed?.fatGrams || 0} gam chất béo. Năng lượng tiêu hao từ hoạt động là ${eb.caloriesBurned} calo. ${eb.healthWarning || ''}
+      ` : '';
 
       const fullTextToRead = `
         Kết quả phân tích AI. 
         Phân tích nguyên nhân: ${dataToRead.causeAnalysis || ''}. 
         ${firstAidText}
+        ${energyText}
         Lời khuyên y tế: ${dataToRead.medicalRecommendation || ''}. 
         Thực đơn bữa tiếp theo gồm: ${menuText}. 
         Hoạt động gợi ý: ${dataToRead.suggestedActivities || ''}.
@@ -156,7 +181,7 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
         </div>
       )}
 
-      {/* ⚠️ Hướng Dẫn Sơ Cứu (Mới bổ sung) */}
+      {/* ⚠️ Hướng Dẫn Sơ Cứu */}
       {data.firstAid && (
         <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
           <h4 className="font-semibold text-red-700 flex items-center gap-1.5">
@@ -164,6 +189,64 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
             Hướng Dẫn Sơ Cứu Ban Đầu:
           </h4>
           <p className="text-sm text-red-800 mt-1 whitespace-pre-line">{data.firstAid}</p>
+        </div>
+      )}
+
+      {/* ⚡ Cân Bằng Năng Lượng & Dinh Dưỡng 6 Giờ (MỚI) */}
+      {data.energyBalance6h && (
+        <div className="p-3.5 bg-amber-50/60 border border-amber-200 rounded-xl space-y-2.5">
+          <div className="flex justify-between items-center border-b border-amber-200 pb-2">
+            <h4 className="font-bold text-amber-900 flex items-center gap-1.5 text-sm">
+              <Zap className="w-4 h-4 text-amber-600 fill-amber-500" />
+              Năng Lượng & Dinh Dưỡng (6 Giờ Qua)
+            </h4>
+            <span className="text-[11px] font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+              {data.energyBalance6h.timeWindow || '6h gần nhất'}
+            </span>
+          </div>
+
+          {/* Calo Nạp / Đốt */}
+          <div className="grid grid-cols-2 gap-2 text-center">
+            <div className="bg-white p-2 rounded-lg border border-amber-100 shadow-sm">
+              <span className="text-xs text-gray-500 block">Nạp vào (Thực phẩm)</span>
+              <span className="text-base font-extrabold text-amber-700 flex items-center justify-center gap-0.5">
+                <Flame className="w-4 h-4 text-orange-500" />
+                +{data.energyBalance6h.caloriesConsumed} kcal
+              </span>
+            </div>
+            <div className="bg-white p-2 rounded-lg border border-amber-100 shadow-sm">
+              <span className="text-xs text-gray-500 block">Tiêu hao (Vận động)</span>
+              <span className="text-base font-extrabold text-blue-600 flex items-center justify-center gap-0.5">
+                <Activity className="w-4 h-4 text-blue-500" />
+                -{data.energyBalance6h.caloriesBurned} kcal
+              </span>
+            </div>
+          </div>
+
+          {/* Phân rã Macronutrients */}
+          {data.energyBalance6h.macrosConsumed && (
+            <div className="bg-white p-2.5 rounded-lg border border-amber-100 text-xs space-y-1">
+              <div className="font-semibold text-gray-700 mb-1">Phân rã dinh dưỡng nạp vào:</div>
+              <div className="grid grid-cols-3 gap-1 text-center font-medium">
+                <div className="bg-orange-50 text-orange-800 py-1 rounded">
+                  Tinh bột: <b className="block text-sm">{data.energyBalance6h.macrosConsumed.carbsGrams}g</b>
+                </div>
+                <div className="bg-emerald-50 text-emerald-800 py-1 rounded">
+                  Đạm: <b className="block text-sm">{data.energyBalance6h.macrosConsumed.proteinGrams}g</b>
+                </div>
+                <div className="bg-purple-50 text-purple-800 py-1 rounded">
+                  Chất béo: <b className="block text-sm">{data.energyBalance6h.macrosConsumed.fatGrams}g</b>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Khuyến cáo xu hướng sức khỏe */}
+          {data.energyBalance6h.healthWarning && (
+            <p className="text-xs text-amber-900 bg-amber-100/80 p-2 rounded-lg leading-relaxed font-medium">
+              💡 <b>Khuyên nghị AI:</b> {data.energyBalance6h.healthWarning}
+            </p>
+          )}
         </div>
       )}
 
@@ -178,7 +261,7 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
       {/* 🥗 Thực Đơn Bữa Tiếp Theo */}
       {data.nextMealMenu && data.nextMealMenu.length > 0 && (
         <div>
-          <h4 className="font-semibold text-orange-700">🥗 Thực Đơn Bữa Tiếp Theo:</h4>
+          <h4 className="font-semibold text-orange-700">🥗 Thực Đơn Bữa Tiếp Theo (Đã Tối Ưu Calo):</h4>
           <ul className="list-disc list-inside text-sm text-gray-600 mt-1 space-y-1">
             {data.nextMealMenu.map((item, idx) => (
               <li key={idx}>{item}</li>
@@ -232,7 +315,7 @@ export default function AIConsultation({ userProfile, healthLogs }: { userProfil
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-            {loading ? 'AI Đang Phân Tích...' : 'Tư Vấn Sức Khỏe AI'}
+            {loading ? 'AI Đang Phân Tích & Tính Calo...' : 'Tư Vấn Sức Khỏe AI'}
           </button>
 
           {advice && renderAdviceContent(advice)}
