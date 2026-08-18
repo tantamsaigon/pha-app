@@ -25,13 +25,15 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
 
   const [loading, setLoading] = useState(false);
 
-  // Lấy danh sách lịch sử gợi ý độc bản từ Firestore dựa trên userId
-  const { suggestions: foodSuggestions } = useInputHistory(userId, 'FOOD');
-  const { suggestions: foodSuggestions, amountSuggestions: foodAmountSuggestions } = useInputHistory(userId, 'FOOD');
+  // 1. ĐÃ SỬA: Lấy chính xác foodSuggestions và foodAmountSuggestions từ hook
+  const { 
+    suggestions: foodSuggestions, 
+    amountSuggestions: foodAmountSuggestions 
+  } = useInputHistory(userId, 'FOOD');
+  
   const { suggestions: activitySuggestions } = useInputHistory(userId, 'ACTIVITY');
   const { suggestions: symptomSuggestions } = useInputHistory(userId, 'SYMPTOM');
 
-  // Kích hoạt Web Speech API cho nút Mic
   const startListening = (onResult: (text: string) => void) => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
       alert('Trình duyệt của bạn không hỗ trợ tính năng Nhận diện giọng nói.');
@@ -63,14 +65,12 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
     setLoading(true);
 
     try {
-      // Lấy ngày chuẩn theo Múi giờ Việt Nam (Asia/Ho_Chi_Minh)
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
       const today = `${year}-${month}-${day}`;
 
-      // Quy tắc: Form nào điền dữ liệu thì mới lưu bản ghi đó vào Firestore
       if (foodName.trim()) {
         await addDoc(collection(db, 'health_logs'), {
           userId,
@@ -112,7 +112,6 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
         });
       }
 
-      // Clear Form sau khi lưu thành công
       setFoodName('');
       setFoodAmount('');
       setActivityName('');
@@ -121,7 +120,6 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
 
       alert('Đã lưu nhật ký thành công!');
 
-      // Callback tải lại dữ liệu ngoài page.tsx
       if (onSaveSuccess) {
         onSaveSuccess();
       }
@@ -169,23 +167,19 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
               ))}
             </datalist>
 
-            {/* Số lượng / Định lượng (ĐÃ THÊM LỊCH SỬ GỢI Ý) */}
+            {/* 2. ĐÃ SỬA: Sửa dư dấu ngoặc kép ở list="food-amount-suggestions" */}
             <input
               type="text"
-              list=""food-amount-suggestions
+              list="food-amount-suggestions"
               placeholder="Số lượng, VD: 1 phần, 2 viên..."
               value={foodAmount}
               onChange={(e) => setFoodAmount(e.target.value)}
               className="col-span-3 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
+
+            {/* 3. ĐÃ SỬA: Render trực tiếp mảng foodAmountSuggestions từ hook */}
             <datalist id="food-amount-suggestions">
-              {Array.from(
-                new Set(
-                  foodSuggestions
-                    .map(() => foodAmount)
-                    .filter(Boolean)
-                )
-              ).map((item, idx) => (
+              {foodAmountSuggestions.map((item, idx) => (
                 <option key={idx} value={item} />
               ))}
             </datalist>
