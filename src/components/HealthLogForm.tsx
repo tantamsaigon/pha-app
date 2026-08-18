@@ -118,7 +118,6 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
       setActivityEnd('');
       setSymptomDesc('');
 
-      alert('Đã lưu nhật ký thành công!');
 
       if (onSaveSuccess) {
         onSaveSuccess();
