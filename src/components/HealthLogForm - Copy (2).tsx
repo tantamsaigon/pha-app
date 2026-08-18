@@ -153,7 +153,6 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
             </button>
           </div>
           <div className="grid grid-cols-12 gap-2">
-            {/* Tên thực phẩm */}
             <input
               type="text"
               list="food-history-suggestions"
@@ -162,34 +161,20 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
               onChange={(e) => setFoodName(e.target.value)}
               className="col-span-6 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
+            {/* Datalist gợi ý lịch sử thực phẩm từ Firestore */}
             <datalist id="food-history-suggestions">
               {foodSuggestions.map((item, idx) => (
                 <option key={idx} value={item} />
               ))}
             </datalist>
 
-            {/* Số lượng / Định lượng (ĐÃ THÊM LỊCH SỬ GỢI Ý) */}
             <input
               type="text"
-              list="amount-history-suggestions"
               placeholder="Số lượng, VD: 1 phần, 2 viên..."
               value={foodAmount}
               onChange={(e) => setFoodAmount(e.target.value)}
               className="col-span-3 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
-            <datalist id="amount-history-suggestions">
-              {Array.from(
-                new Set(
-                  foodSuggestions
-                    .map(() => foodAmount)
-                    .filter(Boolean)
-                )
-              ).map((item, idx) => (
-                <option key={idx} value={item} />
-              ))}
-            </datalist>
-
-            {/* Thời gian */}
             <input
               type="time"
               value={foodTime}
@@ -221,6 +206,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
               onChange={(e) => setActivityName(e.target.value)}
               className="col-span-6 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
+            {/* Datalist gợi ý lịch sử hoạt động từ Firestore */}
             <datalist id="activity-history-suggestions">
               {activitySuggestions.map((item, idx) => (
                 <option key={idx} value={item} />
@@ -264,6 +250,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
               onChange={(e) => setSymptomDesc(e.target.value)}
               className="col-span-9 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
+            {/* Datalist gợi ý lịch sử triệu chứng từ Firestore */}
             <datalist id="symptom-history-suggestions">
               {symptomSuggestions.map((item, idx) => (
                 <option key={idx} value={item} />

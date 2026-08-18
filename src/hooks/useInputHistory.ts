@@ -29,6 +29,7 @@ export function useInputHistory(userId: string | undefined, logType: LogType) {
           // Lấy đúng trường dữ liệu tương ứng với từng LogType
           if (logType === 'FOOD' && data.foodName) {
             uniqueSet.add(data.foodName.trim());
+            if (data.amount) uniqueSet.add(data.amount.trim());
           } else if (logType === 'ACTIVITY' && data.activityName) {
             uniqueSet.add(data.activityName.trim());
           } else if (logType === 'SYMPTOM' && data.description) {
