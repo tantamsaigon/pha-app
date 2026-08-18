@@ -1,0 +1,5 @@
+# Ignore heavy directories
+ignore:
+  - node_modules/**
+  - .next/**
+  - .git/**

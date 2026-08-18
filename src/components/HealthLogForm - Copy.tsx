@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Mic, PlusCircle, Loader2 } from 'lucide-react';
-import { useInputHistory } from '@/hooks/useInputHistory';
 
 interface HealthLogFormProps {
   userId: string;
@@ -24,11 +23,6 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
   const [symptomTime, setSymptomTime] = useState(new Date().toTimeString().slice(0, 5));
 
   const [loading, setLoading] = useState(false);
-
-  // Lấy danh sách lịch sử gợi ý độc bản từ Firestore dựa trên userId
-  const { suggestions: foodSuggestions } = useInputHistory(userId, 'FOOD');
-  const { suggestions: activitySuggestions } = useInputHistory(userId, 'ACTIVITY');
-  const { suggestions: symptomSuggestions } = useInputHistory(userId, 'SYMPTOM');
 
   // Kích hoạt Web Speech API cho nút Mic
   const startListening = (onResult: (text: string) => void) => {
@@ -62,7 +56,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
     setLoading(true);
 
     try {
-      // Lấy ngày chuẩn theo Múi giờ Việt Nam (Asia/Ho_Chi_Minh)
+      // Lấy ngày chuẩn theo Múi giờ Việt Nam (Asia/Ho_Chi_Minh) tránh lỗi UTC
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -76,8 +70,8 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           date: today,
           type: 'FOOD',
           data: {
-            foodName: foodName.trim(),
-            amount: foodAmount.trim() || '1 phần',
+            foodName,
+            amount: foodAmount || '1 phần',
             consumedAt: foodTime || new Date().toTimeString().slice(0, 5),
           },
           createdAt: serverTimestamp(),
@@ -90,7 +84,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           date: today,
           type: 'ACTIVITY',
           data: {
-            activityName: activityName.trim(),
+            activityName,
             startTime: activityStart || new Date().toTimeString().slice(0, 5),
             endTime: activityEnd || activityStart,
           },
@@ -104,7 +98,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           date: today,
           type: 'SYMPTOM',
           data: {
-            description: symptomDesc.trim(),
+            description: symptomDesc,
             onsetTime: symptomTime || new Date().toTimeString().slice(0, 5),
           },
           createdAt: serverTimestamp(),
@@ -155,21 +149,15 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           <div className="grid grid-cols-12 gap-2">
             <input
               type="text"
-              list="food-history-suggestions"
+              autoComplete="on"
               placeholder="Cơm, Thuốc cảm..."
               value={foodName}
               onChange={(e) => setFoodName(e.target.value)}
               className="col-span-6 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
-            {/* Datalist gợi ý lịch sử thực phẩm từ Firestore */}
-            <datalist id="food-history-suggestions">
-              {foodSuggestions.map((item, idx) => (
-                <option key={idx} value={item} />
-              ))}
-            </datalist>
-
             <input
               type="text"
+              autoComplete="on"
               placeholder="Số lượng, VD: 1 phần, 2 viên..."
               value={foodAmount}
               onChange={(e) => setFoodAmount(e.target.value)}
@@ -187,7 +175,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
         {/* 2. Hoạt động Thể chất / Trí nào */}
         <div className="space-y-1.5">
           <div className="flex justify-between items-center">
-            <label className="text-xs font-semibold text-slate-700">Hoạt động Thể chất / Trí nào</label>
+            <label className="text-xs font-semibold text-slate-700">Hoạt động Thể chất / Trí não</label>
             <button
               type="button"
               onClick={() => startListening((text) => setActivityName(text))}
@@ -200,19 +188,12 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           <div className="grid grid-cols-12 gap-2">
             <input
               type="text"
-              list="activity-history-suggestions"
+              autoComplete="on"
               placeholder="Chạy bộ, Làm việc..."
               value={activityName}
               onChange={(e) => setActivityName(e.target.value)}
               className="col-span-6 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
-            {/* Datalist gợi ý lịch sử hoạt động từ Firestore */}
-            <datalist id="activity-history-suggestions">
-              {activitySuggestions.map((item, idx) => (
-                <option key={idx} value={item} />
-              ))}
-            </datalist>
-
             <input
               type="time"
               value={activityStart}
@@ -244,19 +225,12 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
           <div className="grid grid-cols-12 gap-2">
             <input
               type="text"
-              list="symptom-history-suggestions"
+              autoComplete="on"
               placeholder="Đau đầu, Bình thường..."
               value={symptomDesc}
               onChange={(e) => setSymptomDesc(e.target.value)}
               className="col-span-9 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
-            {/* Datalist gợi ý lịch sử triệu chứng từ Firestore */}
-            <datalist id="symptom-history-suggestions">
-              {symptomSuggestions.map((item, idx) => (
-                <option key={idx} value={item} />
-              ))}
-            </datalist>
-
             <input
               type="time"
               value={symptomTime}
