@@ -5,6 +5,7 @@ import { LogType } from '@/types';
 
 export function useInputHistory(userId: string | undefined, logType: LogType) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [amountSuggestions, setAmountSuggestions] = useState<string[]>([]);
   const [loadingHistory, setLoadingHistory] = useState<boolean>(false);
 
   useEffect(() => {
@@ -20,25 +21,25 @@ export function useInputHistory(userId: string | undefined, logType: LogType) {
         );
 
         const snapshot = await getDocs(q);
-        const uniqueSet = new Set<string>();
+        const nameSet = new Set<string>();
+        const amountSet = new Set<string>();
 
         snapshot.forEach((doc) => {
           const data = doc.data()?.data;
           if (!data) return;
 
-          // Lấy đúng trường dữ liệu tương ứng với từng LogType
-          if (logType === 'FOOD' && data.foodName) {
-            uniqueSet.add(data.foodName.trim());
-            if (data.amount) uniqueSet.add(data.amount.trim());
+          if (logType === 'FOOD') {
+            if (data.foodName) nameSet.add(data.foodName.trim());
+            if (data.amount) amountSet.add(data.amount.trim());
           } else if (logType === 'ACTIVITY' && data.activityName) {
-            uniqueSet.add(data.activityName.trim());
+            nameSet.add(data.activityName.trim());
           } else if (logType === 'SYMPTOM' && data.description) {
-            uniqueSet.add(data.description.trim());
+            nameSet.add(data.description.trim());
           }
         });
 
-        // Chuyển Set thành mảng và sắp xếp theo bảng chữ cái
-        setSuggestions(Array.from(uniqueSet).sort((a, b) => a.localeCompare(b, 'vi')));
+        setSuggestions(Array.from(nameSet).sort((a, b) => a.localeCompare(b, 'vi')));
+        setAmountSuggestions(Array.from(amountSet).sort((a, b) => a.localeCompare(b, 'vi')));
       } catch (error) {
         console.error(`Lỗi khi lấy lịch sử ${logType}:`, error);
       } finally {
@@ -49,5 +50,5 @@ export function useInputHistory(userId: string | undefined, logType: LogType) {
     fetchHistory();
   }, [userId, logType]);
 
-  return { suggestions, loadingHistory };
+  return { suggestions, amountSuggestions, loadingHistory };
 }
