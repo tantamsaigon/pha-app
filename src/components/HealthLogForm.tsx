@@ -27,6 +27,7 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
 
   // Lấy danh sách lịch sử gợi ý độc bản từ Firestore dựa trên userId
   const { suggestions: foodSuggestions } = useInputHistory(userId, 'FOOD');
+  const { suggestions: foodSuggestions, amountSuggestions: foodAmountSuggestions } = useInputHistory(userId, 'FOOD');
   const { suggestions: activitySuggestions } = useInputHistory(userId, 'ACTIVITY');
   const { suggestions: symptomSuggestions } = useInputHistory(userId, 'SYMPTOM');
 
@@ -171,13 +172,13 @@ export default function HealthLogForm({ userId, onSaveSuccess }: HealthLogFormPr
             {/* Số lượng / Định lượng (ĐÃ THÊM LỊCH SỬ GỢI Ý) */}
             <input
               type="text"
-              list="amount-history-suggestions"
+              list=""food-amount-suggestions
               placeholder="Số lượng, VD: 1 phần, 2 viên..."
               value={foodAmount}
               onChange={(e) => setFoodAmount(e.target.value)}
               className="col-span-3 px-3 py-2 text-xs text-slate-900 bg-white border border-slate-300 rounded-lg focus:outline-indigo-500"
             />
-            <datalist id="amount-history-suggestions">
+            <datalist id="food-amount-suggestions">
               {Array.from(
                 new Set(
                   foodSuggestions

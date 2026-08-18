@@ -159,8 +159,11 @@ pha-app/
     │   ├── HealthAnalytics.tsx      # Component hiển thị biểu đồ & phân tích xu hướng triệu chứng
     │   ├── HealthLogManager.tsx     # Component danh sách nhật ký (Xóa, chỉnh sửa bản ghi)
     │   └── ProfileEditModal.tsx     # Component chỉnh sửa thông tin cá nhân (Cân nặng, chiều cao, nhóm máu...)
-
-    
+    ├── hooks/
+    │   ├── useInputHistory.ts       # hiển thị menu gợi ý <datalist> cho cả 3 ô nhập liệu (Thực phẩm, Hoạt động, và Triệu chứng).
+    │
+    │
+    │    
     ├── context/
     │   └── AuthContext.tsx          # [Production] Context quản lý phiên đăng nhập & Lắng nghe Realtime Profile
     ├── lib/
